@@ -23,6 +23,11 @@
   header.app .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#67e8f9;font-weight:700}
   header.app h1{margin:10px 0 6px;font-size:28px;font-weight:800;color:#fff;letter-spacing:-.01em}
   header.app p{margin:0;color:#a9c8d1;max-width:700px;font-size:14.5px}
+  @media(max-width:600px){
+    body{background:linear-gradient(180deg,#0d3b46 0%,#0d3b46 360px,#eef6f8 360px,#eef6f8 100%)}
+    header.app{padding-bottom:88px}
+    .wrap{margin-top:-62px}
+  }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
   .wrap{max-width:1200px;margin:-46px auto 60px;padding:0 20px;}
@@ -68,6 +73,24 @@
   .bm-intro{font-weight:700;font-size:18px;margin-bottom:5px;color:var(--text)}
   .bm-help{font-size:13.5px;color:var(--muted);margin-bottom:18px;max-width:540px}
   .bm-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;background:linear-gradient(180deg,#f5fcfd,#e4f3f7);border:1px solid var(--border);border-radius:18px;padding:20px 12px}
+  .bm-3d{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;background:#f5fcfd;border:1px solid var(--border);border-radius:18px;padding:12px}
+  .bm-stage{position:relative;min-height:520px;height:min(64vh,620px);border:1px solid #cde3ea;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#eef8fb 0%,#dcecf1 100%)}
+  .bm-stage canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+  .bm-stage canvas:active{cursor:grabbing}
+  .bm-status{position:absolute;inset:auto 14px 14px;display:flex;align-items:center;justify-content:center;min-height:42px;padding:10px 12px;border:1px solid rgba(8,145,178,.22);border-radius:10px;background:rgba(255,255,255,.88);color:var(--muted);font-size:13px;text-align:center;backdrop-filter:blur(8px)}
+  .bm-status.is-hidden{display:none}
+  .bm-hover{position:absolute;left:14px;top:14px;max-width:min(320px,calc(100% - 28px));padding:8px 10px;border:1px solid rgba(8,145,178,.25);border-radius:10px;background:rgba(255,255,255,.92);color:var(--primary-dark);font-size:12px;font-weight:700;box-shadow:0 8px 22px rgba(13,60,72,.10);opacity:0;transform:translateY(-4px);transition:opacity .15s ease,transform .15s ease;pointer-events:none}
+  .bm-hover.on{opacity:1;transform:translateY(0)}
+  .bm-view{position:absolute;right:14px;bottom:14px;display:flex;gap:5px;padding:5px;border:1px solid rgba(8,145,178,.18);border-radius:11px;background:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(13,60,72,.08)}
+  .bm-view button,.bm-zone-list button{border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);padding:7px 9px;font-size:12px;font-weight:700}
+  .bm-view button:hover,.bm-zone-list button:hover{border-color:var(--border);color:var(--primary-dark);background:#fff}
+  .bm-view button.on,.bm-zone-list button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .bm-zone-list{display:flex;flex-direction:column;gap:7px;max-height:520px;overflow:auto;padding-right:2px}
+  .bm-zone-title{font-size:12px;font-weight:800;color:var(--primary-dark);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 4px}
+  .bm-zone-list button{text-align:left;background:#fff;border-color:var(--border);line-height:1.25}
+  .bm-fallback{margin-top:10px;color:var(--muted);font-size:13px}
+  .bm-fallback summary{cursor:pointer;font-weight:700;color:var(--primary-dark)}
+  @media(max-width:760px){.bm-3d{grid-template-columns:1fr}.bm-stage{min-height:430px;height:58vh}.bm-zone-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.bm-view{left:14px;right:auto}.bm-status{bottom:66px}}
   .bm-fig{text-align:center;margin:0}
   .bm-fig svg{height:380px;width:auto;max-width:46vw;display:block}
   @media(max-width:920px){.bm-fig svg{height:250px;max-width:45vw}}
@@ -80,6 +103,7 @@
   .deco{fill:var(--body-fill);stroke:var(--body-stroke);stroke-width:1.6;pointer-events:none}
   .bm-selected{margin-top:18px;text-align:center;font-size:14px;min-height:22px;color:var(--text)}
   .bm-selected b{color:var(--primary-dark)}
+  .side-chip{display:inline-flex;margin-left:7px;padding:2px 7px;border-radius:999px;background:var(--primary-soft);color:var(--primary-dark);font-size:12px;font-weight:700}
 
   /* ---- panneau pronostic ---- */
   .panel{position:sticky;top:16px;padding:20px}
@@ -131,7 +155,7 @@
 <header class="app">
   <div class="kicker">Suivi du sportif &middot; Module bilan</div>
   <h1>Bilan de la douleur musculo-squelettique</h1>
-  <p>Désignez d'abord la zone douloureuse sur le schéma. Les questions s'adaptent ensuite à la région et s'affinent selon vos réponses. À droite, une orientation diagnostique ciblée se met à jour en direct. Outil d'aide au raisonnement, il ne remplace pas l'examen d'un professionnel de santé.</p>
+  <p>Désignez d'abord la zone douloureuse sur le mannequin 3D. Les questions s'adaptent ensuite à la région et s'affinent selon vos réponses. À droite, une orientation diagnostique ciblée se met à jour en direct. Outil d'aide au raisonnement, il ne remplace pas l'examen d'un professionnel de santé.</p>
 </header>
 
 <div class="wrap">
@@ -167,6 +191,7 @@ const REGION_LABELS = {
   thigh_ant:"Cuisse — face avant (quadriceps)", thigh_post:"Cuisse — face arrière (ischio)", knee:"Genou",
   leg_post:"Mollet / tendon d'Achille", leg_ant:"Tibia / loge fibulaire", ankle:"Cheville", foot:"Pied / orteils"
 };
+window.getPainRegionLabel = region => REGION_LABELS[region] || region;
 const TENDON_REGIONS=['knee','leg_post','shoulder','arm','elbow','hip_groin','ankle','foot','thigh_post','wrist_hand'];
 const BONE_REGIONS=['leg_ant','leg_post','foot','hip_groin','thigh_ant','thigh_post','lumbar'];
 const MUSCLE_REGIONS=['thigh_post','thigh_ant','leg_post','hip_groin','arm','abdomen'];
@@ -453,6 +478,51 @@ let state = loadState();
 let stepIndex = 0;
 function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; } }
 function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+const SIDE_LABELS = {left:"gauche",right:"droite"};
+
+function selectedRegionLabel(){
+  if(!state.region) return "";
+  return REGION_LABELS[state.region] || state.region;
+}
+
+function selectedRegionMarkup(){
+  if(!state.region) return `<span style="color:var(--muted)">Aucune zone sélectionnée — cliquez sur le mannequin.</span>`;
+  const side = state.regionSide && SIDE_LABELS[state.regionSide] ? `<span class="side-chip">${SIDE_LABELS[state.regionSide]}</span>` : "";
+  return `Zone sélectionnée : <b>${selectedRegionLabel()}</b>${side}`;
+}
+
+function regionChoiceButtons(){
+  return Object.entries(REGION_LABELS).map(([region,label])=>
+    `<button type="button" class="region-choice ${state.region===region?'on':''}" data-region="${region}">${label}</button>`
+  ).join("");
+}
+
+function updateBodyMapSelection(){
+  const selected = document.getElementById('selectedRegionText');
+  if(selected) selected.innerHTML = selectedRegionMarkup();
+  form.querySelectorAll('.zone').forEach(el=>el.classList.toggle('sel', el.dataset.region===state.region));
+  form.querySelectorAll('.region-choice').forEach(el=>el.classList.toggle('on', el.dataset.region===state.region));
+}
+
+function setPainRegion(region, side){
+  state.region = region;
+  if(side) state.regionSide = side;
+  else delete state.regionSide;
+  saveState();
+
+  if(orderedSections()[stepIndex] === "Zone douloureuse"){
+    updateBodyMapSelection();
+    renderNav(orderedSections());
+    updateProgress(orderedSections());
+    compute();
+    if(window.syncPainModelSelection) window.syncPainModelSelection();
+  } else {
+    render();
+  }
+}
+
+window.selectPainRegion = setPainRegion;
+window.getPainSelection = () => ({region:state.region, side:state.regionSide});
 
 /* =========================================================================
    5. QUESTIONS ACTIVES (tronc commun + région sélectionnée)
@@ -532,15 +602,34 @@ function svgBack(){
 }
 
 function renderBodyMap(){
-  const sel = state.region ? `Zone sélectionnée : <b>${REGION_LABELS[state.region]}</b>` : `<span style="color:var(--muted)">Aucune zone sélectionnée — cliquez sur le schéma.</span>`;
   return `<div class="section-title"><span class="num">1</span>Zone douloureuse</div>
     <div class="bm-intro">Où avez-vous mal ?</div>
-    <div class="bm-help">Cliquez sur la région douloureuse (vue de face ou de dos). Les questions s'adapteront ensuite à cette zone.</div>
-    <div class="bm-wrap">
-      <figure class="bm-fig" style="margin:0">${svgFront()}<figcaption>Face</figcaption></figure>
-      <figure class="bm-fig" style="margin:0">${svgBack()}<figcaption>Dos</figcaption></figure>
+    <div class="bm-help">Sélectionnez la région douloureuse sur le mannequin 3D. Les questions s'adapteront ensuite à cette zone.</div>
+    <div class="bm-3d" id="painModel3d">
+      <div class="bm-stage">
+        <canvas id="painModelCanvas" aria-label="Mannequin 3D interactif"></canvas>
+        <div class="bm-hover" id="painModelHover"></div>
+        <div class="bm-view" aria-label="Orientation du mannequin">
+          <button type="button" data-view="front" class="on">Face</button>
+          <button type="button" data-view="back">Dos</button>
+          <button type="button" data-view="left">Gauche</button>
+          <button type="button" data-view="right">Droite</button>
+        </div>
+        <div class="bm-status" id="painModelStatus">Chargement du mannequin 3D...</div>
+      </div>
+      <div>
+        <div class="bm-zone-title">Zones rapides</div>
+        <div class="bm-zone-list">${regionChoiceButtons()}</div>
+      </div>
     </div>
-    <div class="bm-selected">${sel}</div>`;
+    <div class="bm-selected" id="selectedRegionText">${selectedRegionMarkup()}</div>
+    <details class="bm-fallback">
+      <summary>Vue 2D de secours</summary>
+      <div class="bm-wrap" style="margin-top:10px">
+        <figure class="bm-fig" style="margin:0">${svgFront()}<figcaption>Face</figcaption></figure>
+        <figure class="bm-fig" style="margin:0">${svgBack()}<figcaption>Dos</figcaption></figure>
+      </div>
+    </details>`;
 }
 
 /* =========================================================================
@@ -549,6 +638,7 @@ function renderBodyMap(){
 const form = document.getElementById('form');
 
 function render(){
+  if(window.destroyPainModel3D) window.destroyPainModel3D();
   const sections = orderedSections();
   if(stepIndex >= sections.length) stepIndex = sections.length-1;
   if(stepIndex < 0) stepIndex = 0;
@@ -557,6 +647,7 @@ function render(){
   if(currentSection === "Zone douloureuse"){
     form.innerHTML = renderBodyMap();
     form.querySelectorAll('.zone').forEach(el=>{ if(el.dataset.region===state.region) el.classList.add('sel'); });
+    requestAnimationFrame(()=>{ if(window.initPainModel3D) window.initPainModel3D(); });
   } else {
     const sectionQs = visibleQuestions().filter(q=>q.section===currentSection);
     let html = `<div class="section-title"><span class="num">${stepIndex+1}</span>${currentSection}</div>`;
@@ -608,9 +699,14 @@ function renderInput(q){
 /* clic sur la cartographie corporelle */
 form.addEventListener('click', e=>{
   const zone = e.target.closest('.zone');
-  if(!zone) return;
-  state.region = zone.dataset.region;
-  saveState(); render();
+  const choice = e.target.closest('.region-choice');
+  if(zone){
+    setPainRegion(zone.dataset.region, zone.dataset.side || null);
+    return;
+  }
+  if(choice){
+    setPainRegion(choice.dataset.region, choice.dataset.side || null);
+  }
 });
 
 /* réponses aux questions */
@@ -649,7 +745,7 @@ function updateProgress(sections){
 function compute(){
   const out=document.getElementById('result');
   if(!state.region){
-    out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Sélectionnez la zone douloureuse sur le schéma pour démarrer une orientation ciblée.</div>`;
+    out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Sélectionnez la zone douloureuse sur le mannequin 3D pour démarrer une orientation ciblée.</div>`;
     return;
   }
 
@@ -695,7 +791,7 @@ function compute(){
   if(has('sleepStress','yes'))yellow.push("Stress / sommeil perturbé");
 
   /* rendu */
-  let html=`<div class="regionTag">${IC.pin} ${REGION_LABELS[state.region]}</div>`;
+  let html=`<div class="regionTag">${IC.pin} ${selectedRegionLabel()}${state.regionSide&&SIDE_LABELS[state.regionSide]?` — ${SIDE_LABELS[state.regionSide]}`:""}</div>`;
 
   if(rf.length){
     html+=`<div class="alert red"><span class="ico">${IC.alert}</span><div><b>Drapeau(x) rouge(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
@@ -713,7 +809,7 @@ function compute(){
   }
 
   if(hyps.length){
-    html+=`<div class="block"><div class="bt">Hypothèses diagnostiques <span>${REGION_LABELS[state.region]}</span></div>`;
+    html+=`<div class="block"><div class="bt">Hypothèses diagnostiques <span>${selectedRegionLabel()}</span></div>`;
     hyps.slice(0,4).forEach(h=>{ html+=`<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.color}"></i></div></div>`; });
     html+=`</div>`;
   } else {
@@ -762,6 +858,315 @@ document.getElementById('prev').addEventListener('click',()=>goStep(-1));
 document.getElementById('next').addEventListener('click',()=>goStep(1));
 
 render();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+
+const MODEL_URL = "assets/models/PM3D_Sphere3D_4.fbx";
+const MODEL_HEIGHT = 5.55;
+let painModelApp = null;
+
+const zoneDefs = [
+  {region:"neck", shape:"sphere", pos:[0,2.33,0], radius:.32},
+  {region:"shoulder", side:"left", shape:"sphere", pos:[-.58,2.02,.02], radius:.28},
+  {region:"shoulder", side:"right", shape:"sphere", pos:[.58,2.02,.02], radius:.28},
+  {region:"arm", side:"left", shape:"cylinder", pos:[-.9,1.38,0], radius:.16, height:.78},
+  {region:"arm", side:"right", shape:"cylinder", pos:[.9,1.38,0], radius:.16, height:.78},
+  {region:"elbow", side:"left", shape:"sphere", pos:[-1.02,.87,0], radius:.18},
+  {region:"elbow", side:"right", shape:"sphere", pos:[1.02,.87,0], radius:.18},
+  {region:"wrist_hand", side:"left", shape:"cylinder", pos:[-1.05,.27,0], radius:.15, height:.72},
+  {region:"wrist_hand", side:"right", shape:"cylinder", pos:[1.05,.27,0], radius:.15, height:.72},
+  {region:"thoracic", shape:"box", pos:[0,1.47,.05], size:[.92,.72,.56]},
+  {region:"abdomen", shape:"box", pos:[0,.78,.22], size:[.72,.56,.34]},
+  {region:"lumbar", shape:"box", pos:[0,.68,-.24], size:[.76,.66,.34]},
+  {region:"hip_groin", shape:"box", pos:[0,.1,0], size:[.92,.52,.58]},
+  {region:"thigh_ant", side:"left", shape:"cylinder", pos:[-.31,-.72,.2], radius:.2, height:1.05},
+  {region:"thigh_ant", side:"right", shape:"cylinder", pos:[.31,-.72,.2], radius:.2, height:1.05},
+  {region:"thigh_post", side:"left", shape:"cylinder", pos:[-.31,-.72,-.2], radius:.2, height:1.05},
+  {region:"thigh_post", side:"right", shape:"cylinder", pos:[.31,-.72,-.2], radius:.2, height:1.05},
+  {region:"knee", side:"left", shape:"sphere", pos:[-.31,-1.44,0], radius:.21},
+  {region:"knee", side:"right", shape:"sphere", pos:[.31,-1.44,0], radius:.21},
+  {region:"leg_ant", side:"left", shape:"cylinder", pos:[-.29,-2.03,.18], radius:.16, height:.86},
+  {region:"leg_ant", side:"right", shape:"cylinder", pos:[.29,-2.03,.18], radius:.16, height:.86},
+  {region:"leg_post", side:"left", shape:"cylinder", pos:[-.29,-2.03,-.18], radius:.16, height:.86},
+  {region:"leg_post", side:"right", shape:"cylinder", pos:[.29,-2.03,-.18], radius:.16, height:.86},
+  {region:"ankle", side:"left", shape:"sphere", pos:[-.27,-2.55,0], radius:.16},
+  {region:"ankle", side:"right", shape:"sphere", pos:[.27,-2.55,0], radius:.16},
+  {region:"foot", side:"left", shape:"box", pos:[-.29,-2.77,.24], size:[.34,.17,.58]},
+  {region:"foot", side:"right", shape:"box", pos:[.29,-2.77,.24], size:[.34,.17,.58]}
+];
+
+function makeZoneGeometry(def){
+  if(def.shape === "sphere") return new THREE.SphereGeometry(def.radius, 28, 18);
+  if(def.shape === "box") return new THREE.BoxGeometry(def.size[0], def.size[1], def.size[2]);
+  return new THREE.CylinderGeometry(def.radius, def.radius, def.height, 28, 1, false);
+}
+
+function zoneLabel(def){
+  const base = window.getPainRegionLabel ? window.getPainRegionLabel(def.region) : def.region;
+  const side = def.side === "left" ? " gauche" : def.side === "right" ? " droite" : "";
+  return `${base}${side}`;
+}
+
+function normalizeModel(object){
+  const initialBox = new THREE.Box3().setFromObject(object);
+  const initialSize = initialBox.getSize(new THREE.Vector3());
+  const scale = MODEL_HEIGHT / Math.max(initialSize.y, .001);
+  object.scale.setScalar(scale);
+  object.updateMatrixWorld(true);
+
+  const box = new THREE.Box3().setFromObject(object);
+  const center = box.getCenter(new THREE.Vector3());
+  object.position.x -= center.x;
+  object.position.y -= center.y;
+  object.position.z -= center.z;
+}
+
+function disposeObject(object){
+  object.traverse(child=>{
+    if(child.geometry) child.geometry.dispose();
+    if(child.material){
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      mats.forEach(mat=>mat.dispose());
+    }
+  });
+}
+
+function createPainModelApp(){
+  const mount = document.getElementById("painModel3d");
+  const canvas = document.getElementById("painModelCanvas");
+  if(!mount || !canvas || painModelApp) return;
+
+  const status = document.getElementById("painModelStatus");
+  const hoverLabel = document.getElementById("painModelHover");
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xeef8fb);
+
+  const camera = new THREE.PerspectiveCamera(36, 1, .05, 80);
+  camera.position.set(0, .2, 8.2);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = .08;
+  controls.target.set(0, 0, 0);
+  controls.minDistance = 4.6;
+  controls.maxDistance = 10.5;
+  controls.maxPolarAngle = Math.PI - .08;
+  controls.update();
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xb7c6ce, 1.75));
+  const key = new THREE.DirectionalLight(0xffffff, 2.15);
+  key.position.set(2.4, 4.6, 4.8);
+  key.castShadow = true;
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x94e4ef, 1.15);
+  rim.position.set(-3, 2.8, -4);
+  scene.add(rim);
+
+  const floor = new THREE.Mesh(
+    new THREE.CircleGeometry(2.15, 72),
+    new THREE.MeshBasicMaterial({color:0xd8e9ee, transparent:true, opacity:.56})
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -2.84;
+  scene.add(floor);
+
+  const hitZones = zoneDefs.map(def=>{
+    const material = new THREE.MeshBasicMaterial({
+      color:0x0891b2,
+      transparent:true,
+      opacity:.012,
+      depthWrite:false
+    });
+    const mesh = new THREE.Mesh(makeZoneGeometry(def), material);
+    mesh.position.set(def.pos[0], def.pos[1], def.pos[2]);
+    mesh.userData = def;
+    mesh.renderOrder = 4;
+    scene.add(mesh);
+    return mesh;
+  });
+
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  let hovered = null;
+  let frame = 0;
+  let startPoint = null;
+
+  painModelApp = {mount, canvas, status, hoverLabel, scene, camera, renderer, controls, hitZones, hovered, frame, resizeObserver:null};
+  const appRef = painModelApp;
+
+  function setStatus(text, hidden=false){
+    if(!status) return;
+    status.textContent = text;
+    status.classList.toggle("is-hidden", hidden);
+  }
+
+  function syncSize(){
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.floor(rect.width));
+    const height = Math.max(1, Math.floor(rect.height));
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+
+  function selectionMatches(def, selection){
+    if(!selection || selection.region !== def.region) return false;
+    if(selection.side && def.side && selection.side !== def.side) return false;
+    return true;
+  }
+
+  function paintZones(){
+    const selection = window.getPainSelection ? window.getPainSelection() : {};
+    hitZones.forEach(mesh=>{
+      const selected = selectionMatches(mesh.userData, selection);
+      const isHovered = mesh === hovered;
+      mesh.material.opacity = selected ? .34 : isHovered ? .2 : .012;
+      mesh.material.color.set(selected ? 0x0891b2 : 0x22d3ee);
+      mesh.material.needsUpdate = true;
+    });
+  }
+
+  function updatePointer(event){
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  }
+
+  function pick(event){
+    updatePointer(event);
+    raycaster.setFromCamera(pointer, camera);
+    return raycaster.intersectObjects(hitZones, false)[0]?.object || null;
+  }
+
+  function setHovered(mesh){
+    if(hovered === mesh) return;
+    hovered = mesh;
+    painModelApp.hovered = mesh;
+    if(mesh){
+      hoverLabel.textContent = zoneLabel(mesh.userData);
+      hoverLabel.classList.add("on");
+    } else {
+      hoverLabel.classList.remove("on");
+    }
+    paintZones();
+  }
+
+  function setView(name){
+    const views = {
+      front:[0,.2,8.2],
+      back:[0,.2,-8.2],
+      left:[-8.2,.2,0],
+      right:[8.2,.2,0]
+    };
+    const pos = views[name] || views.front;
+    camera.position.set(pos[0], pos[1], pos[2]);
+    controls.target.set(0, 0, 0);
+    controls.update();
+    mount.querySelectorAll("[data-view]").forEach(btn=>btn.classList.toggle("on", btn.dataset.view === name));
+  }
+
+  canvas.addEventListener("pointermove", event=>setHovered(pick(event)));
+  canvas.addEventListener("pointerleave", ()=>setHovered(null));
+  canvas.addEventListener("pointerdown", event=>{ startPoint = {x:event.clientX, y:event.clientY}; });
+  canvas.addEventListener("pointerup", event=>{
+    if(!startPoint) return;
+    const dx = event.clientX - startPoint.x;
+    const dy = event.clientY - startPoint.y;
+    startPoint = null;
+    if(Math.hypot(dx, dy) > 6) return;
+    const mesh = pick(event);
+    if(mesh && window.selectPainRegion) window.selectPainRegion(mesh.userData.region, mesh.userData.side || null);
+  });
+
+  mount.querySelectorAll("[data-view]").forEach(btn=>{
+    btn.addEventListener("click", ()=>setView(btn.dataset.view));
+  });
+
+  const resizeObserver = new ResizeObserver(syncSize);
+  resizeObserver.observe(canvas);
+  painModelApp.resizeObserver = resizeObserver;
+  syncSize();
+
+  const loader = new FBXLoader();
+  loader.load(
+    MODEL_URL,
+    object=>{
+      if(painModelApp !== appRef){
+        disposeObject(object);
+        return;
+      }
+      object.traverse(child=>{
+        if(!child.isMesh) return;
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material = new THREE.MeshStandardMaterial({
+          color:0xb7c0c4,
+          roughness:.72,
+          metalness:.02
+        });
+      });
+      normalizeModel(object);
+      scene.add(object);
+      setStatus("", true);
+      paintZones();
+    },
+    event=>{
+      if(painModelApp !== appRef) return;
+      if(event.total) setStatus(`Chargement du mannequin 3D... ${Math.round(event.loaded / event.total * 100)}%`);
+    },
+    ()=>{
+      if(painModelApp !== appRef) return;
+      setStatus("Le mannequin 3D n'a pas pu être chargé. La vue 2D de secours reste disponible.");
+    }
+  );
+
+  function animate(){
+    if(painModelApp !== appRef) return;
+    controls.update();
+    renderer.render(scene, camera);
+    painModelApp.frame = requestAnimationFrame(animate);
+  }
+  animate();
+
+  window.syncPainModelSelection = paintZones;
+}
+
+window.initPainModel3D = createPainModelApp;
+window.destroyPainModel3D = function(){
+  if(!painModelApp) return;
+  cancelAnimationFrame(painModelApp.frame);
+  if(painModelApp.resizeObserver) painModelApp.resizeObserver.disconnect();
+  disposeObject(painModelApp.scene);
+  painModelApp.renderer.dispose();
+  painModelApp = null;
+};
+window.syncPainModelSelection = function(){
+  if(!painModelApp) return;
+  painModelApp.hitZones.forEach(mesh=>{
+    const selection = window.getPainSelection ? window.getPainSelection() : {};
+    const selected = selection.region === mesh.userData.region && (!selection.side || !mesh.userData.side || selection.side === mesh.userData.side);
+    mesh.material.opacity = selected ? .34 : mesh === painModelApp.hovered ? .2 : .012;
+  });
+};
+
+if(document.getElementById("painModel3d")) createPainModelApp();
 </script>
 </body>
 </html>
