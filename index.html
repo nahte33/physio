@@ -131,7 +131,7 @@
 <header class="app">
   <div class="kicker">Suivi du sportif &middot; Module bilan</div>
   <h1>Bilan de la douleur musculo-squelettique</h1>
-  <p>Désignez d'abord la zone douloureuse sur le schéma. Les questions s'adaptent ensuite à la région et s'affinent selon vos réponses. À droite, une orientation diagnostique ciblée se met à jour en direct. Outil d'aide au raisonnement, il ne remplace pas l'examen d'un professionnel de santé.</p>
+  <p>Désignez d'abord la zone douloureuse sur le schéma. Les questions s'adaptent ensuite à la région et selon vos réponses. À la fin du questionnaire, une orientation diagnostique ciblée s'affiche à droite. Outil d'aide au raisonnement, il ne remplace pas l'examen d'un professionnel de santé.</p>
 </header>
 
 <div class="wrap">
@@ -151,7 +151,7 @@
 
     <div class="card panel" id="panel">
       <h2>Orientation clinique</h2>
-      <div class="sub">Synthèse provisoire, actualisée en direct</div>
+      <div class="sub">Synthèse affichée une fois le questionnaire terminé</div>
       <div id="result"></div>
     </div>
   </div>
@@ -211,13 +211,24 @@ const CORE_QUESTIONS = [
   {section:"Caractéristiques de la douleur", id:"painType", type:"single", label:"Comment décririez-vous la douleur ?",
     options:[["mechanical","Mécanique : liée au mouvement / à la charge, calmée par le repos"],["neuro","Brûlure, décharge électrique, fourmillements"],["deep","Profonde, sourde, présente même au repos"]]},
 
-  /* Comportement à la charge — questions ciblées par région */
+  /* Comportement à la charge — orienté selon choc/traumatisme vs surcharge, ciblé par région */
+  // Branche TRAUMA (choc / impact direct)
+  {section:"Comportement à la charge", id:"weightBear", type:"single",
+    label:"Depuis le choc, pouvez-vous prendre appui / utiliser le membre ?",
+    show:s=>isTrauma(s),
+    options:[["yes","Oui, normalement"],["painful","Oui mais douloureux"],["no","Non, impossible"]]},
+  {section:"Comportement à la charge", id:"swellRapid", type:"single",
+    label:"Un gonflement ou un hématome est-il apparu rapidement après le choc (quelques heures) ?",
+    show:s=>isTrauma(s),
+    options:[["yes","Oui, rapidement"],["later","Plus tard / progressivement"],["no","Non"]]},
+  // Branche SURCHARGE (douleur non traumatique)
   {section:"Comportement à la charge", id:"doseDependent", type:"single", label:"La douleur est-elle dose-dépendante ?",
     help:"Plus la quantité d'activité augmente, plus la douleur augmente, de façon assez prévisible.",
+    show:s=>!isTrauma(s),
     options:[["yes","Oui, clairement"],["partly","En partie"],["no","Non"]]},
   {section:"Comportement à la charge", id:"warmup", type:"single", label:"Comportement « échauffement » :",
     help:"La douleur diminue à l'échauffement puis réapparaît / augmente après l'effort ou le lendemain ?",
-    show:s=>TENDON_REGIONS.includes(s.region),
+    show:s=>TENDON_REGIONS.includes(s.region) && !isTrauma(s),
     options:[["yes","Oui, typiquement"],["no","Non / au contraire ça empire à l'effort"]]},
   {section:"Comportement à la charge", id:"bonePoint", type:"single", label:"Un point osseux précis est-il très douloureux à la pression, avec douleur aux impacts ?",
     show:s=>BONE_REGIONS.includes(s.region),
@@ -267,6 +278,8 @@ function not(id,val){ return !has(id,val); }
 function any(id){ const v=state[id]; return Array.isArray(v)?v.length>0:(v!==undefined&&v!==''); }
 function ageLt(n){ const a=Number(state.age); return a&&a<n; }
 function ageGt(n){ const a=Number(state.age); return a&&a>n; }
+/* présentation traumatique : choc / impact direct (vs surcharge progressive) */
+function isTrauma(s){ s=s||state; return s.onset==='direct' || s.trigger==='impact'; }
 
 const REGION_DATA = {
   neck:{ questions:[
@@ -451,6 +464,7 @@ const REGION_DATA = {
 const STORAGE_KEY = "physio_bilan_v2";
 let state = loadState();
 let stepIndex = 0;
+let finished = false; // le bilan ne s'affiche qu'après avoir appuyé sur « Terminer »
 function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; } }
 function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
 
@@ -575,8 +589,8 @@ function renderNav(sections){
   const last = stepIndex === sections.length-1;
   prev.disabled = stepIndex===0;
   const onBodyMap = sections[stepIndex]==="Zone douloureuse";
-  next.disabled = last || (onBodyMap && !state.region);
-  next.textContent = last ? 'Terminé ✓' : 'Suivant →';
+  next.disabled = onBodyMap && !state.region;
+  next.textContent = last ? (finished ? 'Bilan affiché ✓' : 'Terminer & voir le bilan') : 'Suivant →';
 }
 
 function goStep(delta){
@@ -648,6 +662,10 @@ function updateProgress(sections){
    ========================================================================= */
 function compute(){
   const out=document.getElementById('result');
+  if(!finished){
+    out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Répondez au questionnaire, puis appuyez sur « Terminer » : le bilan d'orientation s'affichera ici.</div>`;
+    return;
+  }
   if(!state.region){
     out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Sélectionnez la zone douloureuse sur le schéma pour démarrer une orientation ciblée.</div>`;
     return;
@@ -705,6 +723,14 @@ function compute(){
     html+=`<div class="alert ok"><span class="ico">${IC.check}</span><div>Aucun drapeau rouge signalé.</div></div>`;
   }
 
+  /* orientation traumatique : dépistage fracture / lésion sévère */
+  if(isTrauma() && (has('weightBear','no')||has('swellRapid','yes'))){
+    const pts=[];
+    if(has('weightBear','no')) pts.push("appui impossible sur le membre");
+    if(has('swellRapid','yes')) pts.push("gonflement / hématome d'apparition rapide");
+    html+=`<div class="alert red"><span class="ico">${IC.alert}</span><div><b>Contexte traumatique à surveiller</b><div style="margin-top:4px">Après un choc avec ${pts.join(" et ")}, une <b>fracture ou une lésion sévère</b> doit être écartée (avis médical / imagerie) avant la reprise.</div></div></div>`;
+  }
+
   if(stage) html+=`<div class="block"><div class="bt">Stade</div><span class="badge ${stage.cls}">${stage.txt}</span></div>`;
 
   if(mechTotal>1){
@@ -757,9 +783,13 @@ function buildAdvice(rf, tissue, irr){
 /* =========================================================================
    9. ACTIONS
    ========================================================================= */
-document.getElementById('reset').addEventListener('click',()=>{ if(confirm("Effacer toutes les réponses ?")){ state={}; stepIndex=0; saveState(); render(); }});
+document.getElementById('reset').addEventListener('click',()=>{ if(confirm("Effacer toutes les réponses ?")){ state={}; stepIndex=0; finished=false; saveState(); render(); }});
 document.getElementById('prev').addEventListener('click',()=>goStep(-1));
-document.getElementById('next').addEventListener('click',()=>goStep(1));
+document.getElementById('next').addEventListener('click',()=>{
+  const sections=orderedSections();
+  if(stepIndex < sections.length-1){ goStep(1); }
+  else { finished=true; render(); document.getElementById('panel').scrollIntoView({behavior:'smooth'}); }
+});
 
 render();
 </script>
