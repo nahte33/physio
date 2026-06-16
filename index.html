@@ -5,20 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bilan douleur musculo-squelettique – Suivi du sportif</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap');
   :root{
-    --bg:#0f172a;--surface:#ffffff;--surface-2:#f8fafc;--border:#e2e8f0;
-    --text:#0f172a;--muted:#64748b;--primary:#0d9488;--primary-dark:#0f766e;--primary-soft:#ccfbf1;
-    --danger:#dc2626;--danger-soft:#fee2e2;--warn:#d97706;--warn-soft:#fef3c7;--ok:#16a34a;
-    --radius:14px;--shadow:0 10px 30px rgba(2,6,23,.08);font-synthesis:none;
+    --surface:#ffffff;--surface-2:#f4fafc;--border:#dbe9ee;
+    --text:#0f2c36;--muted:#5b7886;
+    --primary:#0891b2;--primary-dark:#0e7490;--primary-soft:#cffafe;--secondary:#22d3ee;--accent:#059669;
+    --danger:#dc2626;--danger-soft:#fde8e8;--warn:#b45309;--warn-soft:#fef3c7;--ok:#059669;
+    --body-fill:#bcd6de;--body-stroke:#8fb5c0;
+    --radius:16px;--shadow:0 12px 34px rgba(13,60,72,.10);font-synthesis:none;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--text);
-    background:linear-gradient(180deg,#0f172a 0%,#0f172a 220px,#eef2f6 220px,#eef2f6 100%);line-height:1.5;-webkit-font-smoothing:antialiased;}
-  header.app{color:#e2e8f0;padding:26px 20px 70px;max-width:1200px;margin:0 auto;}
-  header.app .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#5eead4;font-weight:700}
-  header.app h1{margin:6px 0 4px;font-size:26px;font-weight:800;color:#fff}
-  header.app p{margin:0;color:#94a3b8;max-width:680px;font-size:14px}
+  body{font-family:'Noto Sans',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text);
+    background:linear-gradient(180deg,#0d3b46 0%,#0d3b46 235px,#eef6f8 235px,#eef6f8 100%);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  h1,h2,.panel h2,.section-title,.bm-intro,.regionTag,.badge,.btn-primary{font-family:'Figtree',system-ui,-apple-system,sans-serif}
+  header.app{color:#dcecef;padding:30px 20px 74px;max-width:1200px;margin:0 auto;}
+  header.app .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#67e8f9;font-weight:700}
+  header.app h1{margin:10px 0 6px;font-size:28px;font-weight:800;color:#fff;letter-spacing:-.01em}
+  header.app p{margin:0;color:#a9c8d1;max-width:700px;font-size:14.5px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
   .wrap{max-width:1200px;margin:-46px auto 60px;padding:0 20px;}
   .layout{display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
@@ -60,18 +65,20 @@
   button:disabled{opacity:.4;cursor:not-allowed}
 
   /* ---- cartographie corporelle ---- */
-  .bm-intro{font-weight:600;font-size:15px;margin-bottom:4px}
-  .bm-help{font-size:13px;color:var(--muted);margin-bottom:16px}
-  .bm-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
-  .bm-fig{text-align:center}
-  .bm-fig svg{width:150px;height:auto;max-width:30vw}
-  @media(max-width:920px){.bm-fig svg{width:104px;max-width:28vw}}
-  .bm-fig figcaption{font-size:11px;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-  .zone{fill:#cbd5e1;stroke:#94a3b8;stroke-width:1;cursor:pointer;transition:fill .15s}
-  .zone:hover{fill:#5eead4}
-  .zone.sel{fill:var(--primary);stroke:var(--primary-dark)}
-  .deco{fill:#e2e8f0;stroke:#cbd5e1;stroke-width:1}
-  .bm-selected{margin-top:16px;text-align:center;font-size:14px;min-height:20px}
+  .bm-intro{font-weight:700;font-size:18px;margin-bottom:5px;color:var(--text)}
+  .bm-help{font-size:13.5px;color:var(--muted);margin-bottom:18px;max-width:540px}
+  .bm-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;background:linear-gradient(180deg,#f5fcfd,#e4f3f7);border:1px solid var(--border);border-radius:18px;padding:20px 12px}
+  .bm-fig{text-align:center;margin:0}
+  .bm-fig svg{height:380px;width:auto;max-width:46vw;display:block}
+  @media(max-width:920px){.bm-fig svg{height:250px;max-width:45vw}}
+  .bm-fig figcaption{font-size:11px;color:var(--muted);margin-top:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em}
+  .silhouette{fill:var(--body-fill);stroke:var(--body-stroke);stroke-width:1.6;stroke-linejoin:round;pointer-events:none}
+  .muscle{fill:none;stroke:#7ba3b0;stroke-width:1.1;opacity:.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+  .zone{fill:transparent;stroke:transparent;stroke-width:1.6;cursor:pointer;transition:fill .18s ease,stroke .18s ease}
+  .zone:hover{fill:rgba(8,145,178,.32)}
+  .zone.sel{fill:rgba(8,145,178,.70);stroke:var(--primary-dark)}
+  .deco{fill:var(--body-fill);stroke:var(--body-stroke);stroke-width:1.6;pointer-events:none}
+  .bm-selected{margin-top:18px;text-align:center;font-size:14px;min-height:22px;color:var(--text)}
   .bm-selected b{color:var(--primary-dark)}
 
   /* ---- panneau pronostic ---- */
@@ -92,7 +99,7 @@
   .alert{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
   .alert.red{background:var(--danger-soft);color:#991b1b;border:1px solid #fecaca}
   .alert.ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
-  .alert .ico{font-size:16px;line-height:1.2}
+  .alert .ico{display:flex;align-items:center;flex-shrink:0;margin-top:1px}
 
   .hyp{margin-bottom:10px}
   .hyp .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;gap:8px}
@@ -117,7 +124,7 @@
   .yellow{font-size:12px;color:var(--warn);margin-top:6px}
   .disclaimer{font-size:11px;color:var(--muted);margin-top:18px;border-top:1px dashed var(--border);padding-top:12px}
   .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 10px}
-  .empty .big{font-size:30px;display:block;margin-bottom:8px;opacity:.5}
+  .empty .big{display:flex;justify-content:center;margin-bottom:10px;color:var(--primary);opacity:.85}
 </style>
 </head>
 <body>
@@ -155,14 +162,14 @@
    1. RÉGIONS & LIBELLÉS
    ========================================================================= */
 const REGION_LABELS = {
-  neck:"Cou (rachis cervical)", shoulder:"Épaule", elbow:"Coude", wrist_hand:"Poignet / main",
-  thoracic:"Haut du dos (dorsal)", lumbar:"Bas du dos (lombaire)", hip_groin:"Hanche / aine / fessier",
-  thigh_ant:"Cuisse — face avant", thigh_post:"Cuisse — face arrière (ischio)", knee:"Genou",
-  leg_post:"Mollet / tendon d'Achille", leg_ant:"Tibia / jambe (face avant)", ankle:"Cheville", foot:"Pied"
+  neck:"Cou (rachis cervical)", shoulder:"Épaule (deltoïde)", arm:"Bras (biceps / triceps)", elbow:"Coude", wrist_hand:"Avant-bras / poignet / main",
+  thoracic:"Thorax / haut du dos (côtes)", abdomen:"Abdomen (grands droits / obliques)", lumbar:"Bas du dos (lombaire / sacrum)", hip_groin:"Bassin / hanche / aine / fessier",
+  thigh_ant:"Cuisse — face avant (quadriceps)", thigh_post:"Cuisse — face arrière (ischio)", knee:"Genou",
+  leg_post:"Mollet / tendon d'Achille", leg_ant:"Tibia / loge fibulaire", ankle:"Cheville", foot:"Pied / orteils"
 };
-const TENDON_REGIONS=['knee','leg_post','shoulder','elbow','hip_groin','ankle','foot','thigh_post','wrist_hand'];
+const TENDON_REGIONS=['knee','leg_post','shoulder','arm','elbow','hip_groin','ankle','foot','thigh_post','wrist_hand'];
 const BONE_REGIONS=['leg_ant','leg_post','foot','hip_groin','thigh_ant','thigh_post','lumbar'];
-const MUSCLE_REGIONS=['thigh_post','thigh_ant','leg_post','hip_groin'];
+const MUSCLE_REGIONS=['thigh_post','thigh_ant','leg_post','hip_groin','arm','abdomen'];
 const JOINT_REGIONS=['knee','ankle','shoulder','wrist_hand','hip_groin','elbow','lumbar','thoracic'];
 
 /* =========================================================================
@@ -417,6 +424,25 @@ const REGION_DATA = {
       {name:"Névrome de Morton",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('ft_burn','yes')],[1,()=>has('ft_loc','forefoot')]]},
       {name:"Aponévrosite / tendinopathie (voûte)",tissue:"tendon",color:"#0891b2",cues:[[2,()=>has('ft_loc','arch')],[1,()=>has('warmup','yes')],[1,()=>has('onset','gradual')]]},
     ]},
+
+  arm:{ questions:[
+      {id:"arm_loc",type:"single",label:"Localisation :",options:[["front","Avant du bras (biceps)"],["back","Arrière du bras (triceps)"],["distal","Près du coude (insertion)"]]},
+      {id:"arm_mech",type:"single",label:"Circonstance :",options:[["contract","Effort de force / traction (soulever, tirer)"],["impact","Choc direct"],["repeat","Gestes répétés"]]},
+    ], diagnoses:[
+      {name:"Lésion du biceps brachial",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('onset','sudden')],[2,()=>has('arm_loc','front')],[2,()=>has('arm_mech','contract')],[1,()=>has('stretchContract','yes')]]},
+      {name:"Lésion du triceps",tissue:"muscle",color:"#4f46e5",cues:[[3,()=>has('arm_loc','back')],[2,()=>has('onset','sudden')],[1,()=>has('arm_mech','contract')]]},
+      {name:"Tendinopathie distale du biceps",tissue:"tendon",color:"#0d9488",cues:[[2,()=>has('arm_loc','distal')],[2,()=>has('onset','gradual')],[2,()=>has('arm_mech','repeat')],[1,()=>has('warmup','yes')]]},
+      {name:"Contusion musculaire (choc)",tissue:"muscle",color:"#b45309",cues:[[3,()=>has('arm_mech','impact')],[2,()=>has('onset','direct')],[2,()=>has('trigger','impact')]]},
+    ]},
+
+  abdomen:{ questions:[
+      {id:"ab_loc",type:"single",label:"Localisation :",options:[["rectus","Centre (grands droits)"],["oblique","Côté (obliques)"],["low","Bas-ventre / pubis"]]},
+      {id:"ab_mech",type:"single",label:"Geste déclenchant :",options:[["reach","Extension / armé (service, smash)"],["twist","Rotation / changement de direction"],["effort","Effort abdominal (redressement)"]]},
+    ], diagnoses:[
+      {name:"Lésion des grands droits",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('onset','sudden')],[2,()=>has('ab_loc','rectus')],[2,()=>has('ab_mech','reach')],[1,()=>has('ab_mech','effort')]]},
+      {name:"Lésion des obliques",tissue:"muscle",color:"#4f46e5",cues:[[3,()=>has('ab_loc','oblique')],[2,()=>has('ab_mech','twist')],[2,()=>has('onset','sudden')]]},
+      {name:"Pubalgie (jonction abdo-adducteurs)",tissue:"muscle",color:"#0d9488",cues:[[3,()=>has('ab_loc','low')],[2,()=>has('trigger','sprintaccel')],[1,()=>has('onset','gradual')]]},
+    ]},
 };
 
 /* =========================================================================
@@ -449,58 +475,58 @@ function orderedSections(){
    6. CARTOGRAPHIE CORPORELLE (SVG cliquable : face / dos / profil)
    ========================================================================= */
 function z(tag, region, attrs){ return `<${tag} class="zone" data-region="${region}" ${attrs}></${tag}>`; }
-function d(tag, attrs){ return `<${tag} class="deco" ${attrs}></${tag}>`; }
+
+/* icônes SVG (pas d'emoji — recommandation accessibilité du design system) */
+const IC = {
+  pin:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>`,
+  alert:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="17.5" x2="12.01" y2="17.5"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  activity:`<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`
+};
+
+/* silhouettes anatomiques — athlète musclé (corps neutre) */
+const OUTLINE = `<path class="silhouette" d="M120,16 C134,16 143,29 143,46 C143,58 139,67 132,72 C152,75 172,84 182,103 C187,116 184,131 178,141 C173,156 169,175 165,189 C161,202 153,210 151,218 C153,230 162,242 170,254 C172,304 164,362 158,414 C156,470 151,520 143,560 C142,569 143,577 147,583 C155,585 165,586 165,591 C165,597 151,597 142,597 C131,597 127,593 126,585 C125,540 128,460 127,418 C126,360 121,300 120,273 C119,300 114,360 113,418 C112,460 115,540 114,585 C113,593 109,597 98,597 C89,597 75,597 75,591 C75,586 85,585 93,583 C97,577 98,569 97,560 C89,520 84,470 82,414 C76,362 68,304 70,254 C78,242 87,230 89,218 C87,210 79,202 75,189 C71,175 67,156 62,141 C56,131 53,116 58,103 C68,84 88,75 108,72 C101,67 97,58 97,46 C97,29 106,16 120,16 Z"/>`;
+const ARMS = `<path class="silhouette" d="M182,105 C194,114 198,131 195,154 C192,184 187,214 181,243 C185,249 183,272 176,278 C170,282 164,278 165,272 C167,238 171,208 169,158 C168,134 175,117 177,107 C178,104 180,104 182,105 Z"/>
+  <path class="silhouette" d="M58,105 C46,114 42,131 45,154 C48,184 53,214 59,243 C55,249 57,272 64,278 C70,282 76,278 75,272 C73,238 69,208 71,158 C72,134 65,117 63,107 C62,104 60,104 58,105 Z"/>`;
+const MUSC_FRONT = `<path class="muscle" d="M101,82 C111,89 129,89 139,82 M120,86 L120,150 M119,118 C107,129 95,128 86,118 M121,118 C133,129 145,128 154,118 M120,150 L120,205 M105,165 L135,165 M105,180 L135,180 M107,194 L133,194 M151,150 C150,178 143,197 133,207 M89,150 C90,178 97,197 107,207 M154,100 C166,106 172,120 170,135 M86,100 C74,106 68,120 70,135 M170,132 C178,154 177,182 171,206 M70,132 C62,154 63,182 69,206 M180,212 C177,234 175,252 172,268 M60,212 C63,234 65,252 68,268 M151,258 C161,302 158,362 154,406 M141,262 C146,316 145,368 143,406 M127,260 C133,312 134,366 132,406 M89,258 C79,302 82,362 86,406 M99,262 C94,316 95,368 97,406 M113,260 C107,312 106,366 108,406 M134,410 C140,416 146,416 150,411 M90,410 C96,416 102,416 106,411 M139,432 C145,470 144,510 141,545 M101,432 C95,470 96,510 99,545"/>`;
+const MUSC_BACK = `<path class="muscle" d="M120,80 L120,250 M104,78 C112,92 120,96 120,110 M136,78 C128,92 120,96 120,110 M150,102 C157,114 155,128 147,134 M90,102 C83,114 85,128 93,134 M162,140 C152,170 140,196 124,206 M78,140 C88,170 100,196 116,206 M112,150 L112,242 M128,150 L128,242 M172,132 C178,156 176,186 170,208 M68,132 C62,156 64,186 70,208 M120,212 C108,216 97,224 91,238 M120,212 C132,216 143,224 149,238 M92,240 C104,252 136,252 148,240 M151,260 C159,312 157,366 153,406 M141,264 C146,316 145,368 143,406 M127,262 C133,314 134,368 132,406 M89,260 C81,312 83,366 87,406 M99,264 C94,316 95,368 97,406 M113,262 C107,314 106,368 108,406 M150,448 C153,474 151,500 146,522 M90,448 C87,474 89,500 94,522 M141,545 L141,562 M99,545 L99,562"/>`;
+const BODY_FRONT = OUTLINE + ARMS + MUSC_FRONT;
+const BODY_BACK = OUTLINE + ARMS + MUSC_BACK;
 
 function svgFront(){
-  return `<svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-    ${z('ellipse','neck','cx="100" cy="30" rx="19" ry="22"')}
-    ${z('rect','neck','x="91" y="49" width="18" height="15" rx="4"')}
-    ${z('ellipse','shoulder','cx="72" cy="80" rx="16" ry="13"')}${z('ellipse','shoulder','cx="128" cy="80" rx="16" ry="13"')}
-    ${z('rect','shoulder','x="54" y="82" width="14" height="52" rx="7"')}${z('rect','shoulder','x="132" y="82" width="14" height="52" rx="7"')}
-    ${z('rect','thoracic','x="80" y="70" width="40" height="56" rx="10"')}
-    ${z('rect','hip_groin','x="82" y="128" width="36" height="52" rx="10"')}
-    ${z('ellipse','elbow','cx="61" cy="140" rx="9" ry="9"')}${z('ellipse','elbow','cx="139" cy="140" rx="9" ry="9"')}
-    ${z('rect','wrist_hand','x="52" y="146" width="13" height="50" rx="6"')}${z('rect','wrist_hand','x="135" y="146" width="13" height="50" rx="6"')}
-    ${z('ellipse','wrist_hand','cx="58" cy="202" rx="8" ry="9"')}${z('ellipse','wrist_hand','cx="142" cy="202" rx="8" ry="9"')}
-    ${z('rect','thigh_ant','x="80" y="182" width="17" height="76" rx="8"')}${z('rect','thigh_ant','x="103" y="182" width="17" height="76" rx="8"')}
-    ${z('ellipse','knee','cx="88" cy="266" rx="11" ry="11"')}${z('ellipse','knee','cx="112" cy="266" rx="11" ry="11"')}
-    ${z('rect','leg_ant','x="81" y="276" width="14" height="74" rx="6"')}${z('rect','leg_ant','x="105" y="276" width="14" height="74" rx="6"')}
-    ${z('ellipse','ankle','cx="88" cy="358" rx="8" ry="8"')}${z('ellipse','ankle','cx="112" cy="358" rx="8" ry="8"')}
-    ${z('ellipse','foot','cx="85" cy="378" rx="11" ry="8"')}${z('ellipse','foot','cx="115" cy="378" rx="11" ry="8"')}
+  return `<svg viewBox="0 0 240 600" xmlns="http://www.w3.org/2000/svg">${BODY_FRONT}
+    ${z('ellipse','neck','cx="120" cy="46" rx="22" ry="30"')}${z('rect','neck','x="106" y="70" width="28" height="20" rx="8"')}
+    ${z('ellipse','shoulder','cx="72" cy="104" rx="20" ry="18"')}${z('ellipse','shoulder','cx="168" cy="104" rx="20" ry="18"')}
+    ${z('rect','arm','x="52" y="122" width="24" height="60" rx="12"')}${z('rect','arm','x="164" y="122" width="24" height="60" rx="12"')}
+    ${z('ellipse','elbow','cx="60" cy="192" rx="12" ry="12"')}${z('ellipse','elbow','cx="180" cy="192" rx="12" ry="12"')}
+    ${z('rect','wrist_hand','x="52" y="204" width="22" height="58" rx="11"')}${z('rect','wrist_hand','x="166" y="204" width="22" height="58" rx="11"')}
+    ${z('ellipse','wrist_hand','cx="64" cy="276" rx="13" ry="16"')}${z('ellipse','wrist_hand','cx="176" cy="276" rx="13" ry="16"')}
+    ${z('rect','thoracic','x="88" y="84" width="64" height="64" rx="18"')}
+    ${z('rect','abdomen','x="96" y="150" width="48" height="56" rx="14"')}
+    ${z('rect','hip_groin','x="88" y="206" width="64" height="46" rx="16"')}
+    ${z('rect','thigh_ant','x="80" y="252" width="36" height="150" rx="18"')}${z('rect','thigh_ant','x="124" y="252" width="36" height="150" rx="18"')}
+    ${z('ellipse','knee','cx="98" cy="414" rx="16" ry="16"')}${z('ellipse','knee','cx="142" cy="414" rx="16" ry="16"')}
+    ${z('rect','leg_ant','x="84" y="432" width="30" height="120" rx="14"')}${z('rect','leg_ant','x="126" y="432" width="30" height="120" rx="14"')}
+    ${z('ellipse','ankle','cx="98" cy="562" rx="11" ry="11"')}${z('ellipse','ankle','cx="142" cy="562" rx="11" ry="11"')}
+    ${z('ellipse','foot','cx="96" cy="586" rx="15" ry="10"')}${z('ellipse','foot','cx="144" cy="586" rx="15" ry="10"')}
   </svg>`;
 }
 function svgBack(){
-  return `<svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-    ${z('ellipse','neck','cx="100" cy="30" rx="19" ry="22"')}
-    ${z('rect','neck','x="91" y="49" width="18" height="15" rx="4"')}
-    ${z('ellipse','shoulder','cx="72" cy="80" rx="16" ry="13"')}${z('ellipse','shoulder','cx="128" cy="80" rx="16" ry="13"')}
-    ${z('rect','shoulder','x="54" y="82" width="14" height="52" rx="7"')}${z('rect','shoulder','x="132" y="82" width="14" height="52" rx="7"')}
-    ${z('rect','thoracic','x="80" y="70" width="40" height="44" rx="10"')}
-    ${z('rect','lumbar','x="83" y="114" width="34" height="32" rx="8"')}
-    ${z('rect','hip_groin','x="80" y="146" width="40" height="36" rx="12"')}
-    ${z('ellipse','elbow','cx="61" cy="140" rx="9" ry="9"')}${z('ellipse','elbow','cx="139" cy="140" rx="9" ry="9"')}
-    ${z('rect','wrist_hand','x="52" y="146" width="13" height="50" rx="6"')}${z('rect','wrist_hand','x="135" y="146" width="13" height="50" rx="6"')}
-    ${z('ellipse','wrist_hand','cx="58" cy="202" rx="8" ry="9"')}${z('ellipse','wrist_hand','cx="142" cy="202" rx="8" ry="9"')}
-    ${z('rect','thigh_post','x="80" y="184" width="17" height="74" rx="8"')}${z('rect','thigh_post','x="103" y="184" width="17" height="74" rx="8"')}
-    ${z('ellipse','knee','cx="88" cy="266" rx="11" ry="11"')}${z('ellipse','knee','cx="112" cy="266" rx="11" ry="11"')}
-    ${z('rect','leg_post','x="81" y="276" width="14" height="74" rx="6"')}${z('rect','leg_post','x="105" y="276" width="14" height="74" rx="6"')}
-    ${z('ellipse','ankle','cx="88" cy="358" rx="8" ry="8"')}${z('ellipse','ankle','cx="112" cy="358" rx="8" ry="8"')}
-    ${z('ellipse','foot','cx="85" cy="378" rx="11" ry="8"')}${z('ellipse','foot','cx="115" cy="378" rx="11" ry="8"')}
-  </svg>`;
-}
-function svgSide(){
-  return `<svg viewBox="0 0 130 400" xmlns="http://www.w3.org/2000/svg">
-    ${z('ellipse','neck','cx="58" cy="30" rx="17" ry="20"')}
-    ${z('rect','neck','x="52" y="48" width="16" height="14" rx="4"')}
-    ${z('ellipse','shoulder','cx="64" cy="82" rx="12" ry="13"')}
-    ${z('rect','thoracic','x="46" y="68" width="34" height="46" rx="8"')}
-    ${z('rect','lumbar','x="48" y="114" width="30" height="30" rx="8"')}
-    ${z('rect','hip_groin','x="46" y="144" width="36" height="34" rx="12"')}
-    ${d('rect','x="50" y="180" width="24" height="76" rx="10"')}
-    ${z('ellipse','knee','cx="60" cy="266" rx="11" ry="11"')}
-    ${z('rect','leg_post','x="51" y="276" width="16" height="74" rx="6"')}
-    ${z('ellipse','ankle','cx="60" cy="358" rx="8" ry="8"')}
-    ${z('ellipse','foot','cx="68" cy="378" rx="14" ry="8"')}
+  return `<svg viewBox="0 0 240 600" xmlns="http://www.w3.org/2000/svg">${BODY_BACK}
+    ${z('ellipse','neck','cx="120" cy="46" rx="22" ry="30"')}${z('rect','neck','x="106" y="70" width="28" height="20" rx="8"')}
+    ${z('ellipse','shoulder','cx="72" cy="104" rx="20" ry="18"')}${z('ellipse','shoulder','cx="168" cy="104" rx="20" ry="18"')}
+    ${z('rect','arm','x="52" y="122" width="24" height="60" rx="12"')}${z('rect','arm','x="164" y="122" width="24" height="60" rx="12"')}
+    ${z('ellipse','elbow','cx="60" cy="192" rx="12" ry="12"')}${z('ellipse','elbow','cx="180" cy="192" rx="12" ry="12"')}
+    ${z('rect','wrist_hand','x="52" y="204" width="22" height="58" rx="11"')}${z('rect','wrist_hand','x="166" y="204" width="22" height="58" rx="11"')}
+    ${z('ellipse','wrist_hand','cx="64" cy="276" rx="13" ry="16"')}${z('ellipse','wrist_hand','cx="176" cy="276" rx="13" ry="16"')}
+    ${z('rect','thoracic','x="86" y="84" width="68" height="54" rx="16"')}
+    ${z('rect','lumbar','x="92" y="140" width="56" height="44" rx="14"')}
+    ${z('rect','hip_groin','x="84" y="186" width="72" height="52" rx="18"')}
+    ${z('rect','thigh_post','x="80" y="252" width="36" height="150" rx="18"')}${z('rect','thigh_post','x="124" y="252" width="36" height="150" rx="18"')}
+    ${z('ellipse','knee','cx="98" cy="414" rx="16" ry="16"')}${z('ellipse','knee','cx="142" cy="414" rx="16" ry="16"')}
+    ${z('rect','leg_post','x="84" y="432" width="30" height="120" rx="14"')}${z('rect','leg_post','x="126" y="432" width="30" height="120" rx="14"')}
+    ${z('ellipse','ankle','cx="98" cy="562" rx="11" ry="11"')}${z('ellipse','ankle','cx="142" cy="562" rx="11" ry="11"')}
+    ${z('ellipse','foot','cx="96" cy="586" rx="15" ry="10"')}${z('ellipse','foot','cx="144" cy="586" rx="15" ry="10"')}
   </svg>`;
 }
 
@@ -508,11 +534,10 @@ function renderBodyMap(){
   const sel = state.region ? `Zone sélectionnée : <b>${REGION_LABELS[state.region]}</b>` : `<span style="color:var(--muted)">Aucune zone sélectionnée — cliquez sur le schéma.</span>`;
   return `<div class="section-title"><span class="num">1</span>Zone douloureuse</div>
     <div class="bm-intro">Où avez-vous mal ?</div>
-    <div class="bm-help">Cliquez sur la région douloureuse (vues face, dos et profil). Les questions s'adapteront ensuite à cette zone.</div>
+    <div class="bm-help">Cliquez sur la région douloureuse (vue de face ou de dos). Les questions s'adapteront ensuite à cette zone.</div>
     <div class="bm-wrap">
       <figure class="bm-fig" style="margin:0">${svgFront()}<figcaption>Face</figcaption></figure>
       <figure class="bm-fig" style="margin:0">${svgBack()}<figcaption>Dos</figcaption></figure>
-      <figure class="bm-fig" style="margin:0">${svgSide()}<figcaption>Profil</figcaption></figure>
     </div>
     <div class="bm-selected">${sel}</div>`;
 }
@@ -623,7 +648,7 @@ function updateProgress(sections){
 function compute(){
   const out=document.getElementById('result');
   if(!state.region){
-    out.innerHTML=`<div class="empty"><span class="big">🩺</span>Sélectionnez la zone douloureuse sur le schéma pour démarrer une orientation ciblée.</div>`;
+    out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Sélectionnez la zone douloureuse sur le schéma pour démarrer une orientation ciblée.</div>`;
     return;
   }
 
@@ -669,14 +694,14 @@ function compute(){
   if(has('sleepStress','yes'))yellow.push("Stress / sommeil perturbé");
 
   /* rendu */
-  let html=`<div class="regionTag">📍 ${REGION_LABELS[state.region]}</div>`;
+  let html=`<div class="regionTag">${IC.pin} ${REGION_LABELS[state.region]}</div>`;
 
   if(rf.length){
-    html+=`<div class="alert red"><span class="ico">⚠️</span><div><b>Drapeau(x) rouge(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
+    html+=`<div class="alert red"><span class="ico">${IC.alert}</span><div><b>Drapeau(x) rouge(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
       +rf.map(k=>`<li>${rfLabels[k]||k}</li>`).join("")
       +`</ul><div style="margin-top:6px">Évaluation médicale recommandée avant de poursuivre la rééducation${rf.includes('cauda')?' — en urgence (queue de cheval).':'.'}</div></div></div>`;
   } else if(any('redflags')){
-    html+=`<div class="alert ok"><span class="ico">✓</span><div>Aucun drapeau rouge signalé.</div></div>`;
+    html+=`<div class="alert ok"><span class="ico">${IC.check}</span><div>Aucun drapeau rouge signalé.</div></div>`;
   }
 
   if(stage) html+=`<div class="block"><div class="bt">Stade</div><span class="badge ${stage.cls}">${stage.txt}</span></div>`;
@@ -704,7 +729,7 @@ function compute(){
   const advice=buildAdvice(rf, hyps[0]?hyps[0].tissue:null, irr);
   if(advice) html+=`<div class="block"><div class="bt">Pistes de prise en charge</div><div class="advice">${advice}</div></div>`;
 
-  html+=`<div class="disclaimer">⚕️ Aide au raisonnement clinique fondée sur les modèles actuels : drapeaux rouges/jaunes, classification du mécanisme de la douleur, raisonnement diagnostique régional et concept d'irritabilité (Maitland). Ne pose pas de diagnostic et ne remplace pas l'examen d'un professionnel de santé.</div>`;
+  html+=`<div class="disclaimer">Aide au raisonnement clinique fondée sur les modèles actuels : drapeaux rouges/jaunes, classification du mécanisme de la douleur, raisonnement diagnostique régional et concept d'irritabilité (Maitland). Ne pose pas de diagnostic et ne remplace pas l'examen d'un professionnel de santé.</div>`;
 
   out.innerHTML=html;
 }
