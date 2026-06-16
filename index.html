@@ -83,6 +83,9 @@
   button{font-family:inherit;font-size:14px;font-weight:600;border-radius:10px;border:1.5px solid transparent;padding:11px 18px;cursor:pointer;transition:.15s}
   .btn-ghost{background:#fff;border-color:var(--border);color:var(--muted)}
   .btn-ghost:hover{border-color:var(--muted)}
+  .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+  button:disabled{opacity:.4;cursor:not-allowed}
 
   /* ---- panneau pronostic ---- */
   .panel{position:sticky;top:16px;padding:20px}
@@ -145,8 +148,12 @@
       <div class="progress-bar"><i id="progress"></i></div>
       <form id="form" autocomplete="off"></form>
       <div class="actions">
-        <button type="button" class="btn-ghost" id="reset">Réinitialiser</button>
+        <button type="button" class="btn-ghost" id="prev">← Précédent</button>
         <span style="font-size:12px;color:var(--muted);align-self:center" id="answeredCount"></span>
+        <button type="button" class="btn-primary" id="next">Suivant →</button>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:14px">
+        <button type="button" class="btn-ghost" id="reset">Réinitialiser</button>
       </div>
     </div>
 
@@ -286,6 +293,7 @@ const QUESTIONS = [
    ========================================================================= */
 const STORAGE_KEY = "physio_bilan_v1";
 let state = loadState();
+let stepIndex = 0;   // étape (famille de questions) affichée
 
 function loadState(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; }
@@ -301,17 +309,24 @@ function visibleQuestions(){
   return QUESTIONS.filter(q => !q.show || q.show(state));
 }
 
+/* familles (sections) actuellement visibles, dans l'ordre, sans doublon */
+function orderedSections(){
+  const secs = [];
+  visibleQuestions().forEach(q=>{ if(!secs.includes(q.section)) secs.push(q.section); });
+  return secs;
+}
+
 function render(){
-  const qs = visibleQuestions();
-  let html = "";
-  let lastSection = null;
-  let sectionNum = 0;
-  qs.forEach(q=>{
-    if(q.section !== lastSection){
-      sectionNum++;
-      lastSection = q.section;
-      html += `<div class="section-title"><span class="num">${sectionNum}</span>${q.section}</div>`;
-    }
+  const sections = orderedSections();
+  // garder l'étape dans les bornes (les questions adaptatives peuvent ajouter/retirer des familles)
+  if(stepIndex >= sections.length) stepIndex = sections.length - 1;
+  if(stepIndex < 0) stepIndex = 0;
+
+  const currentSection = sections[stepIndex];
+  const sectionQs = visibleQuestions().filter(q=>q.section===currentSection);
+
+  let html = `<div class="section-title"><span class="num">${stepIndex+1}</span>${currentSection}</div>`;
+  sectionQs.forEach(q=>{
     html += `<div class="q" data-id="${q.id}">
       <div class="label">${q.label}</div>
       ${q.help?`<div class="help">${q.help}</div>`:""}
@@ -319,8 +334,28 @@ function render(){
     </div>`;
   });
   form.innerHTML = html;
-  updateProgress(qs);
+  renderNav(sections);
+  updateProgress();
   compute();
+}
+
+/* état des boutons Précédent / Suivant */
+function renderNav(sections){
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const last = stepIndex === sections.length - 1;
+  prev.disabled = stepIndex === 0;
+  next.disabled = last;
+  next.textContent = last ? 'Terminé ✓' : 'Suivant →';
+}
+
+function goStep(delta){
+  const sections = orderedSections();
+  const t = stepIndex + delta;
+  if(t < 0 || t > sections.length - 1) return;
+  stepIndex = t;
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function renderInput(q){
@@ -374,19 +409,23 @@ form.addEventListener('change', e=>{
     state[id]= el.type==='number' ? (el.value===''?undefined:Number(el.value)) : el.value;
   }
   saveState();
-  // certaines réponses ouvrent/ferment des questions -> re-render
+  // certaines réponses ouvrent/ferment des questions -> re-render de l'étape
   if(['radiation','painType','onset','trigger'].includes(id)) render();
-  else { updateProgress(visibleQuestions()); compute(); }
+  else { updateProgress(); compute(); }
 });
 
-function updateProgress(qs){
-  const total = qs.length;
+function updateProgress(){
+  const sections = orderedSections();
+  const total = sections.length || 1;
+  document.getElementById('progress').style.width = ((stepIndex+1)/total*100)+'%';
+
+  const qs = visibleQuestions().filter(q=>q.section===sections[stepIndex]);
   const done = qs.filter(q=>{
     const v=state[q.id];
     return Array.isArray(v)?v.length>0:(v!==undefined&&v!=='');
   }).length;
-  document.getElementById('progress').style.width = (total?done/total*100:0)+'%';
-  document.getElementById('answeredCount').textContent = `${done} / ${total} questions`;
+  document.getElementById('answeredCount').textContent =
+    `Étape ${stepIndex+1}/${total} · ${done}/${qs.length} répondu`;
 }
 
 /* =========================================================================
@@ -621,9 +660,11 @@ function buildAdvice(rf, hyps, irr, topMech){
    ========================================================================= */
 document.getElementById('reset').addEventListener('click', ()=>{
   if(confirm("Effacer toutes les réponses ?")){
-    state={}; saveState(); render();
+    state={}; stepIndex=0; saveState(); render();
   }
 });
+document.getElementById('prev').addEventListener('click', ()=>goStep(-1));
+document.getElementById('next').addEventListener('click', ()=>goStep(1));
 
 render();
 </script>
