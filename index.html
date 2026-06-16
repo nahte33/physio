@@ -904,6 +904,7 @@ import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 
 const MODEL_URL = "assets/models/PM3D_Sphere3D_4.fbx";
 const MODEL_HEIGHT = 5.55;
+const FORCE_FALLBACK_MODEL = new URLSearchParams(window.location.search).has("fallback3d");
 let painModelApp = null;
 
 const zoneDefs = [
@@ -972,6 +973,65 @@ function disposeObject(object){
   });
 }
 
+function buildFallbackMannequin(){
+  const group = new THREE.Group();
+  group.name = "procedural-pain-mannequin";
+
+  const bodyMat = new THREE.MeshStandardMaterial({
+    color:0x839aa2,
+    roughness:.54,
+    metalness:.02,
+    side:THREE.DoubleSide,
+    emissive:0x10272f,
+    emissiveIntensity:.018
+  });
+  const shadowMat = new THREE.MeshStandardMaterial({
+    color:0x6f858d,
+    roughness:.62,
+    metalness:.01,
+    side:THREE.DoubleSide
+  });
+
+  function add(geometry, material, position, rotation=[0,0,0], scale=[1,1,1]){
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(position[0], position[1], position[2]);
+    mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
+    mesh.scale.set(scale[0], scale[1], scale[2]);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    return mesh;
+  }
+
+  add(new THREE.SphereGeometry(.24, 32, 22), bodyMat, [0,2.47,0], [0,0,0], [.9,1.18,.82]);
+  add(new THREE.CapsuleGeometry(.12,.22,12,22), shadowMat, [0,2.12,0]);
+  add(new THREE.SphereGeometry(.48, 40, 24), bodyMat, [0,1.58,.02], [0,0,0], [1.42,1.05,.72]);
+  add(new THREE.SphereGeometry(.34, 36, 20), bodyMat, [0,.9,.08], [0,0,0], [1.08,1.38,.62]);
+  add(new THREE.SphereGeometry(.36, 36, 20), shadowMat, [0,.18,0], [0,0,0], [1.55,.72,.76]);
+
+  add(new THREE.SphereGeometry(.18, 28, 18), bodyMat, [-.62,1.95,.02], [0,0,0], [1.22,1,.9]);
+  add(new THREE.SphereGeometry(.18, 28, 18), bodyMat, [.62,1.95,.02], [0,0,0], [1.22,1,.9]);
+  add(new THREE.CapsuleGeometry(.13,.72,12,24), bodyMat, [-.82,1.34,0], [0,0,-.22]);
+  add(new THREE.CapsuleGeometry(.13,.72,12,24), bodyMat, [.82,1.34,0], [0,0,.22]);
+  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [-.97,.87,0]);
+  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [.97,.87,0]);
+  add(new THREE.CapsuleGeometry(.11,.68,12,22), bodyMat, [-1.02,.34,0], [0,0,.06]);
+  add(new THREE.CapsuleGeometry(.11,.68,12,22), bodyMat, [1.02,.34,0], [0,0,-.06]);
+  add(new THREE.SphereGeometry(.12, 22, 14), shadowMat, [-1.04,-.12,.02], [0,0,0], [.8,1.18,.62]);
+  add(new THREE.SphereGeometry(.12, 22, 14), shadowMat, [1.04,-.12,.02], [0,0,0], [.8,1.18,.62]);
+
+  add(new THREE.CapsuleGeometry(.17,.92,14,26), bodyMat, [-.31,-.68,0], [0,0,.04]);
+  add(new THREE.CapsuleGeometry(.17,.92,14,26), bodyMat, [.31,-.68,0], [0,0,-.04]);
+  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [-.31,-1.38,.03], [0,0,0], [1,1,.82]);
+  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [.31,-1.38,.03], [0,0,0], [1,1,.82]);
+  add(new THREE.CapsuleGeometry(.14,.88,14,24), bodyMat, [-.29,-2.02,0], [0,0,-.04]);
+  add(new THREE.CapsuleGeometry(.14,.88,14,24), bodyMat, [.29,-2.02,0], [0,0,.04]);
+  add(new THREE.BoxGeometry(.28,.16,.52), shadowMat, [-.29,-2.77,.22], [0,0,0], [1,1,1]);
+  add(new THREE.BoxGeometry(.28,.16,.52), shadowMat, [.29,-2.77,.22], [0,0,0], [1,1,1]);
+
+  return group;
+}
+
 function createPainModelApp(){
   const mount = document.getElementById("painModel3d");
   const canvas = document.getElementById("painModelCanvas");
@@ -1026,7 +1086,7 @@ function createPainModelApp(){
     const material = new THREE.MeshBasicMaterial({
       color:0x0891b2,
       transparent:true,
-      opacity:.012,
+      opacity:0,
       depthWrite:false
     });
     const mesh = new THREE.Mesh(makeZoneGeometry(def), material);
@@ -1045,6 +1105,9 @@ function createPainModelApp(){
 
   painModelApp = {mount, canvas, status, hoverLabel, scene, camera, renderer, controls, hitZones, hovered, frame, resizeObserver:null};
   const appRef = painModelApp;
+  const fallbackModel = buildFallbackMannequin();
+  scene.add(fallbackModel);
+  setStatus("", true);
 
   function setStatus(text, hidden=false){
     if(!status) return;
@@ -1139,42 +1202,47 @@ function createPainModelApp(){
   painModelApp.resizeObserver = resizeObserver;
   syncSize();
 
-  const loader = new FBXLoader();
-  loader.load(
-    MODEL_URL,
-    object=>{
-      if(painModelApp !== appRef){
-        disposeObject(object);
-        return;
-      }
-      object.traverse(child=>{
-        if(!child.isMesh) return;
-        if(child.geometry && !child.geometry.attributes.normal) child.geometry.computeVertexNormals();
-        child.castShadow = true;
-        child.receiveShadow = true;
-        child.material = new THREE.MeshStandardMaterial({
-          color:0x8fa5ad,
-          roughness:.58,
-          metalness:.01,
-          side:THREE.DoubleSide,
-          emissive:0x17323a,
-          emissiveIntensity:.025
+  if(!FORCE_FALLBACK_MODEL){
+    const loader = new FBXLoader();
+    loader.load(
+      MODEL_URL,
+      object=>{
+        if(painModelApp !== appRef){
+          disposeObject(object);
+          return;
+        }
+        scene.remove(fallbackModel);
+        disposeObject(fallbackModel);
+        object.traverse(child=>{
+          if(!child.isMesh) return;
+          if(child.geometry && !child.geometry.attributes.normal) child.geometry.computeVertexNormals();
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.material = new THREE.MeshStandardMaterial({
+            color:0x8fa5ad,
+            roughness:.58,
+            metalness:.01,
+            side:THREE.DoubleSide,
+            emissive:0x17323a,
+            emissiveIntensity:.025
+          });
         });
-      });
-      normalizeModel(object);
-      scene.add(object);
-      setStatus("", true);
-      paintZones();
-    },
-    event=>{
-      if(painModelApp !== appRef) return;
-      if(event.total) setStatus(`Chargement du mannequin 3D... ${Math.round(event.loaded / event.total * 100)}%`);
-    },
-    ()=>{
-      if(painModelApp !== appRef) return;
-      setStatus("Le mannequin 3D n'a pas pu être chargé. La vue 2D de secours reste disponible.");
-    }
-  );
+        normalizeModel(object);
+        scene.add(object);
+        setStatus("", true);
+        paintZones();
+      },
+      event=>{
+        if(painModelApp !== appRef) return;
+        if(event.total) setStatus(`Chargement du mannequin 3D... ${Math.round(event.loaded / event.total * 100)}%`);
+      },
+      ()=>{
+        if(painModelApp !== appRef) return;
+        console.warn("Le FBX n'a pas pu être chargé. Le mannequin 3D simplifié reste actif.");
+        setStatus("", true);
+      }
+    );
+  }
 
   function animate(){
     if(painModelApp !== appRef) return;
