@@ -6,39 +6,16 @@
 <title>Bilan douleur musculo-squelettique – Suivi du sportif</title>
 <style>
   :root{
-    --bg:#0f172a;
-    --bg-soft:#1e293b;
-    --surface:#ffffff;
-    --surface-2:#f8fafc;
-    --border:#e2e8f0;
-    --text:#0f172a;
-    --muted:#64748b;
-    --primary:#0d9488;
-    --primary-dark:#0f766e;
-    --primary-soft:#ccfbf1;
-    --danger:#dc2626;
-    --danger-soft:#fee2e2;
-    --warn:#d97706;
-    --warn-soft:#fef3c7;
-    --ok:#16a34a;
-    --radius:14px;
-    --shadow:0 10px 30px rgba(2,6,23,.08);
-    font-synthesis:none;
+    --bg:#0f172a;--surface:#ffffff;--surface-2:#f8fafc;--border:#e2e8f0;
+    --text:#0f172a;--muted:#64748b;--primary:#0d9488;--primary-dark:#0f766e;--primary-soft:#ccfbf1;
+    --danger:#dc2626;--danger-soft:#fee2e2;--warn:#d97706;--warn-soft:#fef3c7;--ok:#16a34a;
+    --radius:14px;--shadow:0 10px 30px rgba(2,6,23,.08);font-synthesis:none;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
-    color:var(--text);
-    background:linear-gradient(180deg,#0f172a 0%,#0f172a 220px,#eef2f6 220px,#eef2f6 100%);
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  header.app{
-    color:#e2e8f0;
-    padding:26px 20px 70px;
-    max-width:1200px;margin:0 auto;
-  }
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--text);
+    background:linear-gradient(180deg,#0f172a 0%,#0f172a 220px,#eef2f6 220px,#eef2f6 100%);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  header.app{color:#e2e8f0;padding:26px 20px 70px;max-width:1200px;margin:0 auto;}
   header.app .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#5eead4;font-weight:700}
   header.app h1{margin:6px 0 4px;font-size:26px;font-weight:800;color:#fff}
   header.app p{margin:0;color:#94a3b8;max-width:680px;font-size:14px}
@@ -46,16 +23,13 @@
   .wrap{max-width:1200px;margin:-46px auto 60px;padding:0 20px;}
   .layout{display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
   @media(max-width:920px){.layout{grid-template-columns:1fr}}
-
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 
-  /* progress */
   .progress-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin:0 0 18px}
   .progress-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),#22d3ee);transition:width .4s ease}
 
   .questionnaire{padding:22px}
-  .section-title{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary-dark);margin:26px 0 14px}
-  .section-title:first-child{margin-top:4px}
+  .section-title{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary-dark);margin:4px 0 14px}
   .section-title .num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--primary-soft);color:var(--primary-dark);font-size:12px}
 
   .q{padding:16px 0;border-top:1px solid var(--surface-2)}
@@ -74,10 +48,8 @@
   .scale{display:flex;flex-wrap:wrap;gap:6px}
   .scale .opt span{width:40px;text-align:center;padding:9px 0;font-variant-numeric:tabular-nums}
 
-  input[type=number],input[type=text],select{
-    width:100%;max-width:260px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text)
-  }
-  input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  input[type=number],input[type=text]{width:100%;max-width:260px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text)}
+  input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 
   .actions{display:flex;justify-content:space-between;gap:10px;margin-top:24px;flex-wrap:wrap}
   button{font-family:inherit;font-size:14px;font-weight:600;border-radius:10px;border:1.5px solid transparent;padding:11px 18px;cursor:pointer;transition:.15s}
@@ -87,10 +59,27 @@
   .btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
   button:disabled{opacity:.4;cursor:not-allowed}
 
+  /* ---- cartographie corporelle ---- */
+  .bm-intro{font-weight:600;font-size:15px;margin-bottom:4px}
+  .bm-help{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .bm-wrap{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .bm-fig{text-align:center}
+  .bm-fig svg{width:150px;height:auto;max-width:30vw}
+  @media(max-width:920px){.bm-fig svg{width:104px;max-width:28vw}}
+  .bm-fig figcaption{font-size:11px;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .zone{fill:#cbd5e1;stroke:#94a3b8;stroke-width:1;cursor:pointer;transition:fill .15s}
+  .zone:hover{fill:#5eead4}
+  .zone.sel{fill:var(--primary);stroke:var(--primary-dark)}
+  .deco{fill:#e2e8f0;stroke:#cbd5e1;stroke-width:1}
+  .bm-selected{margin-top:16px;text-align:center;font-size:14px;min-height:20px}
+  .bm-selected b{color:var(--primary-dark)}
+
   /* ---- panneau pronostic ---- */
   .panel{position:sticky;top:16px;padding:20px}
   .panel h2{margin:0 0 2px;font-size:16px;font-weight:800}
   .panel .sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+
+  .regionTag{display:inline-flex;align-items:center;gap:6px;background:var(--primary-soft);color:var(--primary-dark);font-weight:700;font-size:13px;padding:6px 12px;border-radius:99px;margin-bottom:4px}
 
   .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;font-size:12px;font-weight:700}
   .badge.acute{background:var(--warn-soft);color:var(--warn)}
@@ -106,14 +95,14 @@
   .alert .ico{font-size:16px;line-height:1.2}
 
   .hyp{margin-bottom:10px}
-  .hyp .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+  .hyp .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;gap:8px}
   .hyp .row b{font-weight:600}
   .hyp .row span{color:var(--muted);font-variant-numeric:tabular-nums}
   .meter{height:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:99px;overflow:hidden}
   .meter > i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s ease}
 
   .mech{display:grid;gap:8px}
-  .mech .m{display:grid;grid-template-columns:120px 1fr 36px;align-items:center;gap:8px;font-size:13px}
+  .mech .m{display:grid;grid-template-columns:104px 1fr 36px;align-items:center;gap:8px;font-size:13px}
   .mech .m span:last-child{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 
   .irr{display:flex;gap:6px}
@@ -125,11 +114,8 @@
   .advice{font-size:13px;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
   .advice ul{margin:8px 0 0;padding-left:18px}
   .advice li{margin-bottom:4px}
-
   .yellow{font-size:12px;color:var(--warn);margin-top:6px}
-
   .disclaimer{font-size:11px;color:var(--muted);margin-top:18px;border-top:1px dashed var(--border);padding-top:12px}
-
   .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 10px}
   .empty .big{font-size:30px;display:block;margin-bottom:8px;opacity:.5}
 </style>
@@ -138,12 +124,11 @@
 <header class="app">
   <div class="kicker">Suivi du sportif &middot; Module bilan</div>
   <h1>Bilan de la douleur musculo-squelettique</h1>
-  <p>Répondez aux questions ci-dessous. À chaque réponse, une orientation diagnostique se met à jour à droite (mécanisme de la douleur, hypothèses tissulaires, irritabilité, drapeaux). Outil d'aide au raisonnement, il ne remplace pas l'examen d'un professionnel de santé.</p>
+  <p>Désignez d'abord la zone douloureuse sur le schéma. Les questions s'adaptent ensuite à la région et s'affinent selon vos réponses. À droite, une orientation diagnostique ciblée se met à jour en direct. Outil d'aide au raisonnement, il ne remplace pas l'examen d'un professionnel de santé.</p>
 </header>
 
 <div class="wrap">
   <div class="layout">
-    <!-- QUESTIONNAIRE -->
     <div class="card questionnaire">
       <div class="progress-bar"><i id="progress"></i></div>
       <form id="form" autocomplete="off"></form>
@@ -157,7 +142,6 @@
       </div>
     </div>
 
-    <!-- PANNEAU PRONOSTIC -->
     <div class="card panel" id="panel">
       <h2>Orientation clinique</h2>
       <div class="sub">Synthèse provisoire, actualisée en direct</div>
@@ -168,103 +152,80 @@
 
 <script>
 /* =========================================================================
-   BANQUE DE QUESTIONS
-   Chaque question adapte le bilan et alimente le moteur de raisonnement.
-   type: single | multi | scale | number
-   show: condition d'affichage (raisonnement adaptatif)
+   1. RÉGIONS & LIBELLÉS
    ========================================================================= */
-const REGIONS = ["Épaule","Coude","Poignet / main","Rachis cervical (cou)","Rachis dorsal","Rachis lombaire (bas du dos)","Hanche / aine","Cuisse","Genou","Jambe (mollet/tibia)","Cheville","Pied"];
+const REGION_LABELS = {
+  neck:"Cou (rachis cervical)", shoulder:"Épaule", elbow:"Coude", wrist_hand:"Poignet / main",
+  thoracic:"Haut du dos (dorsal)", lumbar:"Bas du dos (lombaire)", hip_groin:"Hanche / aine / fessier",
+  thigh_ant:"Cuisse — face avant", thigh_post:"Cuisse — face arrière (ischio)", knee:"Genou",
+  leg_post:"Mollet / tendon d'Achille", leg_ant:"Tibia / jambe (face avant)", ankle:"Cheville", foot:"Pied"
+};
+const TENDON_REGIONS=['knee','leg_post','shoulder','elbow','hip_groin','ankle','foot','thigh_post','wrist_hand'];
+const BONE_REGIONS=['leg_ant','leg_post','foot','hip_groin','thigh_ant','thigh_post','lumbar'];
+const MUSCLE_REGIONS=['thigh_post','thigh_ant','leg_post','hip_groin'];
+const JOINT_REGIONS=['knee','ankle','shoulder','wrist_hand','hip_groin','elbow','lumbar','thoracic'];
 
-const QUESTIONS = [
-  /* ---- 1. Contexte ---- */
+/* =========================================================================
+   2. QUESTIONS GÉNÉRIQUES (tronc commun, certaines ciblées par région)
+   ========================================================================= */
+const CORE_QUESTIONS = [
   {section:"Contexte", id:"age", type:"number", label:"Âge", help:"En années", min:10, max:90},
   {section:"Contexte", id:"sport", type:"text", label:"Sport principal", help:"Ex. course à pied, football, musculation…"},
   {section:"Contexte", id:"loadChange", type:"single", label:"Votre charge d'entraînement a-t-elle changé récemment ?",
     help:"Volume, intensité ou fréquence sur les 2-4 dernières semaines",
     options:[["spike","Forte augmentation"],["slight","Légère hausse"],["stable","Stable"],["down","Diminution / reprise"]]},
-  {section:"Contexte", id:"region", type:"select", label:"Région douloureuse principale", options:REGIONS.map(r=>[r,r])},
 
-  /* ---- 2. Drapeaux rouges ---- */
   {section:"Sécurité (drapeaux rouges)", id:"redflags", type:"multi",
     label:"Présentez-vous l'un de ces signes ? (cochez tout ce qui s'applique)",
-    help:"Cette étape vérifie l'absence de signe nécessitant un avis médical.",
+    help:"Étape de sécurité : recherche de signes nécessitant un avis médical.",
     options:[
       ["trauma","Traumatisme violent + impossibilité de prendre appui / d'utiliser le membre"],
       ["nightpain","Douleur nocturne constante, non soulagée par le repos ou le changement de position"],
       ["systemic","Perte de poids inexpliquée, fièvre, sueurs nocturnes, ou antécédent de cancer"],
-      ["cauda","Troubles pour uriner/aller à la selle, ou perte de sensibilité au niveau du périnée"],
+      ["cauda","Troubles pour uriner / aller à la selle, ou perte de sensibilité au périnée"],
       ["neuroprog","Faiblesse musculaire qui s'aggrave nettement de jour en jour"],
-      ["infection","Articulation chaude, rouge, gonflée avec sensation de malaise général / fièvre"],
+      ["infection","Articulation chaude, rouge, gonflée avec malaise général / fièvre"],
       ["none","Aucun de ces signes"]
     ]},
 
-  /* ---- 3. Histoire ---- */
   {section:"Histoire de la douleur", id:"onset", type:"single", label:"Comment la douleur est-elle apparue ?",
-    options:[
-      ["sudden","Brutalement pendant l'effort (j'ai senti quelque chose)"],
-      ["direct","Après un choc / traumatisme direct"],
-      ["gradual","Progressivement, en lien avec l'entraînement"],
-      ["spontaneous","Sans raison apparente"]
-    ]},
+    options:[["sudden","Brutalement pendant l'effort (j'ai senti quelque chose)"],["direct","Après un choc / traumatisme direct"],
+      ["gradual","Progressivement, en lien avec l'entraînement"],["spontaneous","Sans raison apparente"]]},
   {section:"Histoire de la douleur", id:"trigger", type:"single", label:"Quel geste a déclenché ou déclenche la douleur ?",
-    options:[
-      ["sprintaccel","Sprint / accélération / freinage"],
-      ["jumpland","Saut, réception, pivot"],
-      ["impact","Impact direct"],
-      ["repetitive","Gestes répétés / charge cumulée"],
-      ["load","Port de charge / poussée"],
-      ["none2","Pas de geste précis"]
-    ]},
+    options:[["sprintaccel","Sprint / accélération / freinage"],["jumpland","Saut, réception, pivot"],["impact","Impact direct"],
+      ["repetitive","Gestes répétés / charge cumulée"],["load","Port de charge / poussée"],["none2","Pas de geste précis"]]},
   {section:"Histoire de la douleur", id:"duration", type:"single", label:"Depuis combien de temps avez-vous mal ?",
     options:[["acute","Moins de 6 semaines"],["subacute","6 semaines à 3 mois"],["persistent","Plus de 3 mois"]]},
 
-  /* ---- 4. Localisation & comportement ---- */
-  {section:"Localisation & comportement", id:"localisation", type:"single", label:"La douleur est…",
-    options:[
-      ["localized","Bien localisée (je peux la pointer du doigt)"],
-      ["regional","Sur une zone, mais difficile à pointer précisément"],
-      ["diffuse","Diffuse / étendue"]
-    ]},
-  {section:"Localisation & comportement", id:"radiation", type:"single", label:"La douleur descend-elle dans le membre selon un trajet (irradiation) ?",
-    options:[["yes","Oui, elle irradie le long du membre"],["no","Non, elle reste sur place"]]},
-  {section:"Localisation & comportement", id:"painType", type:"single", label:"Comment décririez-vous la douleur ?",
-    options:[
-      ["mechanical","Mécanique : liée au mouvement / à la charge, calmée par le repos"],
-      ["neuro","Brûlure, décharge électrique, fourmillements"],
-      ["deep","Profonde, sourde, présente même au repos"]
-    ]},
+  {section:"Caractéristiques de la douleur", id:"localisation", type:"single", label:"La douleur est…",
+    options:[["localized","Bien localisée (je peux la pointer du doigt)"],["regional","Sur une zone, difficile à pointer"],["diffuse","Diffuse / étendue"]]},
+  {section:"Caractéristiques de la douleur", id:"radiation", type:"single", label:"La douleur descend-elle dans le membre selon un trajet (irradiation) ?",
+    options:[["yes","Oui, elle irradie"],["no","Non, elle reste sur place"]]},
+  {section:"Caractéristiques de la douleur", id:"painType", type:"single", label:"Comment décririez-vous la douleur ?",
+    options:[["mechanical","Mécanique : liée au mouvement / à la charge, calmée par le repos"],["neuro","Brûlure, décharge électrique, fourmillements"],["deep","Profonde, sourde, présente même au repos"]]},
 
-  /* ---- 5. Comportement à la charge (orientation tissulaire) ---- */
+  /* Comportement à la charge — questions ciblées par région */
   {section:"Comportement à la charge", id:"doseDependent", type:"single", label:"La douleur est-elle dose-dépendante ?",
-    help:"Plus la quantité d'activité augmente, plus la douleur augmente (de façon assez prévisible).",
+    help:"Plus la quantité d'activité augmente, plus la douleur augmente, de façon assez prévisible.",
     options:[["yes","Oui, clairement"],["partly","En partie"],["no","Non"]]},
   {section:"Comportement à la charge", id:"warmup", type:"single", label:"Comportement « échauffement » :",
-    help:"La douleur diminue à l'échauffement puis réapparaît/augmente après l'effort ou le lendemain ?",
-    options:[["yes","Oui, typiquement ça"],["no","Non / au contraire ça empire à l'effort"]]},
-  {section:"Comportement à la charge", id:"bonePoint", type:"single", label:"Existe-t-il un point osseux précis très douloureux à la pression, avec une douleur aux impacts (course, sauts) ?",
+    help:"La douleur diminue à l'échauffement puis réapparaît / augmente après l'effort ou le lendemain ?",
+    show:s=>TENDON_REGIONS.includes(s.region),
+    options:[["yes","Oui, typiquement"],["no","Non / au contraire ça empire à l'effort"]]},
+  {section:"Comportement à la charge", id:"bonePoint", type:"single", label:"Un point osseux précis est-il très douloureux à la pression, avec douleur aux impacts ?",
+    show:s=>BONE_REGIONS.includes(s.region),
     options:[["yes","Oui"],["no","Non"]]},
-  {section:"Comportement à la charge", id:"stretchContract", type:"single", label:"La douleur est-elle reproduite à la fois en étirant ET en contractant le muscle ?",
-    show:s=>s.onset==='sudden'||s.trigger==='sprintaccel'||s.trigger==='jumpland',
+  {section:"Comportement à la charge", id:"stretchContract", type:"single", label:"La douleur est-elle reproduite en étirant ET en contractant le muscle ?",
+    show:s=>MUSCLE_REGIONS.includes(s.region) && (s.onset==='sudden'||s.trigger==='sprintaccel'||s.trigger==='jumpland'),
     options:[["yes","Oui"],["no","Non"],["unsure","Je ne sais pas"]]},
-  {section:"Comportement à la charge", id:"jointSigns", type:"single", label:"Avez-vous l'un de ces signes articulaires ?",
-    options:[
-      ["swelling","Gonflement de l'articulation"],
-      ["instability","Sensation d'instabilité / dérobement"],
-      ["locking","Blocage / accrochage / craquement douloureux"],
-      ["nojoint","Aucun de ces signes"]
-    ]},
+  {section:"Comportement à la charge", id:"jointSigns", type:"multi", label:"Avez-vous l'un de ces signes articulaires ?",
+    show:s=>JOINT_REGIONS.includes(s.region),
+    options:[["swelling","Gonflement de l'articulation"],["instability","Instabilité / dérobement"],["locking","Blocage / accrochage / craquement douloureux"],["nojoint","Aucun de ces signes"]]},
 
-  /* ---- 6. Symptômes neurologiques (si pertinent) ---- */
   {section:"Symptômes neurologiques", id:"neuroSx", type:"multi", label:"Ressentez-vous l'un de ces symptômes dans le membre ?",
     show:s=>s.radiation==='yes'||s.painType==='neuro',
-    options:[
-      ["tingling","Fourmillements / picotements"],
-      ["numbness","Engourdissement / perte de sensibilité"],
-      ["weakness","Sensation de faiblesse"],
-      ["nonNeuro","Aucun de ces symptômes"]
-    ]},
+    options:[["tingling","Fourmillements / picotements"],["numbness","Engourdissement / perte de sensibilité"],["weakness","Sensation de faiblesse"],["nonNeuro","Aucun de ces symptômes"]]},
 
-  /* ---- 7. Sensibilisation centrale / nociplastique ---- */
   {section:"Sensibilité de la douleur", id:"disproportionate", type:"single", label:"La douleur vous paraît-elle disproportionnée par rapport à ce que vous faites ?",
     options:[["yes","Oui, souvent"],["sometimes","Parfois"],["no","Non"]]},
   {section:"Sensibilité de la douleur", id:"widespread", type:"single", label:"Avez-vous des douleurs à plusieurs endroits du corps, ou qui se déplacent ?",
@@ -274,397 +235,505 @@ const QUESTIONS = [
   {section:"Sensibilité de la douleur", id:"sleepStress", type:"single", label:"Sommeil perturbé, fatigue importante ou stress marqué en ce moment ?",
     options:[["yes","Oui"],["no","Non"]]},
 
-  /* ---- 8. Sévérité & irritabilité ---- */
-  {section:"Sévérité & irritabilité", id:"painNow", type:"scale", label:"Intensité de la douleur en ce moment (0 = aucune, 10 = maximale)", max:10},
+  {section:"Sévérité & irritabilité", id:"painNow", type:"scale", label:"Intensité de la douleur en ce moment (0–10)", max:10},
   {section:"Sévérité & irritabilité", id:"painMax", type:"scale", label:"Intensité maximale lors des crises (0–10)", max:10},
-  {section:"Sévérité & irritabilité", id:"settle", type:"single", label:"Une fois la douleur déclenchée, combien de temps met-elle à se calmer ?",
+  {section:"Sévérité & irritabilité", id:"settle", type:"single", label:"Une fois déclenchée, combien de temps la douleur met-elle à se calmer ?",
     options:[["fast","Quasi immédiatement"],["minutes","Quelques minutes"],["hours","Des heures, voire le lendemain"]]},
   {section:"Sévérité & irritabilité", id:"limitation", type:"single", label:"Impact sur l'entraînement :",
     options:[["continue","Je peux continuer normalement"],["reduce","Je dois réduire / adapter"],["stop","Je dois arrêter"]]},
 
-  /* ---- 9. Drapeaux jaunes ---- */
   {section:"Facteurs psychosociaux", id:"fear", type:"scale", label:"À quel point craignez-vous que bouger / vous entraîner aggrave la blessure ? (0–10)", max:10},
   {section:"Facteurs psychosociaux", id:"recovery", type:"single", label:"Pensez-vous que cette blessure va mettre longtemps à guérir ?",
-    options:[["yes","Oui, j'ai des doutes sur la guérison"],["neutral","Je ne sais pas"],["no","Non, je suis confiant"]]},
+    options:[["yes","Oui, j'ai des doutes"],["neutral","Je ne sais pas"],["no","Non, je suis confiant"]]},
 ];
 
-/* =========================================================================
-   ÉTAT + PERSISTANCE
-   ========================================================================= */
-const STORAGE_KEY = "physio_bilan_v1";
-let state = loadState();
-let stepIndex = 0;   // étape (famille de questions) affichée
+const SECTION_ORDER = ["Contexte","Sécurité (drapeaux rouges)","Histoire de la douleur","Caractéristiques de la douleur",
+  "Précisions sur la zone","Comportement à la charge","Symptômes neurologiques","Sensibilité de la douleur","Sévérité & irritabilité","Facteurs psychosociaux"];
 
-function loadState(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; }
-}
+/* =========================================================================
+   3. DONNÉES PAR RÉGION : questions ciblées + diagnostic différentiel
+   cue = [poids, condition()] ; le score est normalisé sur la somme des poids.
+   tissue : sert aux conseils (tendon|muscle|bone|joint|nerve|central|flag)
+   ========================================================================= */
+function has(id,val){ const v=state[id]; return Array.isArray(v)?v.includes(val):v===val; }
+function not(id,val){ return !has(id,val); }
+function any(id){ const v=state[id]; return Array.isArray(v)?v.length>0:(v!==undefined&&v!==''); }
+function ageLt(n){ const a=Number(state.age); return a&&a<n; }
+function ageGt(n){ const a=Number(state.age); return a&&a>n; }
+
+const REGION_DATA = {
+  neck:{ questions:[
+      {id:"nk_pattern",type:"single",label:"Comportement de la douleur au cou :",options:[["mech","Augmente avec les mouvements du cou, raideur"],["arm","Descend dans le bras / l'omoplate"],["head","Remonte vers la tête (maux de tête)"]]},
+      {id:"nk_arm",type:"single",label:"Fourmillements ou perte de force dans le bras/la main ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Cervicalgie mécanique",tissue:"joint",color:"#0d9488",cues:[[2,()=>has('nk_pattern','mech')],[2,()=>has('painType','mechanical')],[1,()=>has('onset','gradual')],[1,()=>not('radiation','yes')]]},
+      {name:"Radiculopathie cervicale",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('nk_pattern','arm')],[2,()=>has('nk_arm','yes')],[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','tingling')],[2,()=>has('neuroSx','numbness')],[1,()=>has('painType','neuro')]]},
+      {name:"Céphalée cervicogénique",tissue:"joint",color:"#0891b2",cues:[[3,()=>has('nk_pattern','head')],[1,()=>has('nk_pattern','mech')]]},
+    ]},
+
+  shoulder:{ questions:[
+      {id:"sh_loc",type:"single",label:"Localisation principale :",options:[["lat","Moignon / face externe"],["front","Avant de l'épaule"],["acj","Dessus (acromio-claviculaire)"],["diffuse","Diffuse"]]},
+      {id:"sh_overhead",type:"single",label:"Pire bras au-dessus de la tête / lancers ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"sh_weak",type:"single",label:"Faiblesse ou difficulté à lever le bras ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"sh_appre",type:"single",label:"Sensation que l'épaule va se déboîter (appréhension) ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"sh_stiff",type:"single",label:"Raideur globale : perte d'amplitude dans toutes les directions ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"sh_neck",type:"single",label:"La douleur change-t-elle avec les mouvements du cou ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Douleur de coiffe (tendinopathie / conflit)",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('sh_loc','lat')],[2,()=>has('sh_overhead','yes')],[2,()=>has('sh_weak','yes')],[2,()=>has('onset','gradual')],[2,()=>has('trigger','repetitive')],[1,()=>has('warmup','yes')]]},
+      {name:"Instabilité gléno-humérale",tissue:"joint",color:"#4f46e5",cues:[[3,()=>has('sh_appre','yes')],[2,()=>has('onset','sudden')],[2,()=>has('onset','direct')],[1,()=>ageLt(30)],[1,()=>has('jointSigns','instability')]]},
+      {name:"Lésion acromio-claviculaire",tissue:"joint",color:"#0891b2",cues:[[3,()=>has('sh_loc','acj')],[2,()=>has('onset','direct')],[2,()=>has('trigger','impact')]]},
+      {name:"Capsulite rétractile",tissue:"joint",color:"#b45309",cues:[[3,()=>has('sh_stiff','yes')],[1,()=>ageGt(40)],[1,()=>has('onset','gradual')]]},
+      {name:"Douleur cervicale référée",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('sh_neck','yes')],[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','tingling')],[1,()=>has('painType','neuro')]]},
+    ]},
+
+  elbow:{ questions:[
+      {id:"el_loc",type:"single",label:"Localisation :",options:[["lat","Face externe (épicondyle)"],["med","Face interne"],["post","Pointe du coude"]]},
+      {id:"el_grip",type:"single",label:"Douleur en serrant / soulevant (poignée, raquette) ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"el_ulnar",type:"single",label:"Fourmillements dans l'annulaire / l'auriculaire ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Épicondylalgie latérale (tennis elbow)",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('el_loc','lat')],[2,()=>has('el_grip','yes')],[2,()=>has('trigger','repetitive')],[1,()=>has('onset','gradual')]]},
+      {name:"Épicondylalgie médiale (golfer)",tissue:"tendon",color:"#0891b2",cues:[[3,()=>has('el_loc','med')],[1,()=>has('trigger','repetitive')],[1,()=>has('onset','gradual')],[1,()=>has('el_grip','yes')]]},
+      {name:"Neuropathie ulnaire",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('el_ulnar','yes')],[2,()=>has('neuroSx','tingling')],[1,()=>has('el_loc','med')]]},
+    ]},
+
+  wrist_hand:{ questions:[
+      {id:"wr_loc",type:"single",label:"Localisation :",options:[["thumb","Côté pouce"],["central","Centre / dos du poignet"],["ulnar","Côté auriculaire"]]},
+      {id:"wr_dq",type:"single",label:"Douleur côté pouce en saisissant / tordant ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"wr_carpal",type:"single",label:"Fourmillements pouce–index–majeur, surtout la nuit ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"wr_fall",type:"single",label:"Chute sur la main (réception en hyperextension) ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Ténosynovite de De Quervain",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('wr_dq','yes')],[2,()=>has('wr_loc','thumb')],[1,()=>has('trigger','repetitive')]]},
+      {name:"Syndrome du canal carpien",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('wr_carpal','yes')],[2,()=>has('neuroSx','tingling')],[1,()=>has('neuroSx','numbness')]]},
+      {name:"Fracture du scaphoïde à écarter",tissue:"flag",color:"#dc2626",cues:[[3,()=>has('wr_fall','yes')],[2,()=>has('onset','direct')],[1,()=>has('wr_loc','thumb')]]},
+      {name:"Entorse / lésion du TFCC",tissue:"joint",color:"#4f46e5",cues:[[2,()=>has('onset','direct')],[2,()=>has('wr_loc','ulnar')],[1,()=>has('jointSigns','swelling')]]},
+    ]},
+
+  thoracic:{ questions:[
+      {id:"th_breath",type:"single",label:"Douleur augmentée par la respiration profonde, la toux, ou la pression sur les côtes ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"th_rot",type:"single",label:"Douleur aux rotations du tronc, raideur ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Dorsalgie mécanique",tissue:"joint",color:"#0d9488",cues:[[2,()=>has('th_rot','yes')],[2,()=>has('painType','mechanical')],[1,()=>has('onset','gradual')]]},
+      {name:"Douleur costo-vertébrale / costale",tissue:"joint",color:"#0891b2",cues:[[3,()=>has('th_breath','yes')]]},
+    ]},
+
+  lumbar:{ questions:[
+      {id:"lb_pattern",type:"single",label:"Direction qui aggrave le plus :",options:[["flex","Penché en avant / position assise"],["ext","En arrière (cambrer)"],["none","Pas de direction claire"]]},
+      {id:"lb_leg",type:"single",label:"La douleur descend-elle dans la jambe sous le genou ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"lb_walk",type:"single",label:"Lourdeur / douleur des jambes à la marche, soulagée assis ou penché en avant ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"lb_si",type:"single",label:"Douleur localisée à une fesse / l'articulation sacro-iliaque ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Lombalgie commune (non spécifique)",tissue:"joint",color:"#0d9488",cues:[[2,()=>has('painType','mechanical')],[2,()=>has('lb_pattern','flex')],[1,()=>has('trigger','load')],[1,()=>not('lb_leg','yes')]]},
+      {name:"Radiculopathie / sciatique",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('lb_leg','yes')],[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','tingling')],[2,()=>has('neuroSx','numbness')],[1,()=>has('painType','neuro')]]},
+      {name:"Spondylolyse (sportif jeune)",tissue:"bone",color:"#b45309",cues:[[3,()=>has('lb_pattern','ext')],[1,()=>ageLt(25)],[1,()=>has('trigger','jumpland')]]},
+      {name:"Sténose lombaire",tissue:"nerve",color:"#6d28d9",cues:[[3,()=>has('lb_walk','yes')],[2,()=>ageGt(50)],[1,()=>has('duration','persistent')]]},
+      {name:"Douleur sacro-iliaque",tissue:"joint",color:"#0891b2",cues:[[3,()=>has('lb_si','yes')],[1,()=>has('onset','direct')]]},
+    ]},
+
+  hip_groin:{ questions:[
+      {id:"hp_loc",type:"single",label:"Localisation :",options:[["groin","Pli de l'aine / avant"],["troch","Face externe (grand trochanter)"],["glute","Fesse"],["pubic","Pubis / adducteurs"]]},
+      {id:"hp_pinch",type:"single",label:"Douleur dans l'aine en pliant fort la hanche / assis longtemps, parfois accrochage ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"hp_add",type:"single",label:"Douleur en serrant les jambes / aux changements de direction ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"hp_side",type:"single",label:"Douleur face externe couché sur le côté ou en montant les escaliers ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Conflit fémoro-acétabulaire / labrum",tissue:"joint",color:"#4f46e5",cues:[[2,()=>has('hp_loc','groin')],[3,()=>has('hp_pinch','yes')],[1,()=>has('jointSigns','locking')],[1,()=>has('onset','gradual')]]},
+      {name:"Pubalgie / lésion des adducteurs",tissue:"muscle",color:"#0891b2",cues:[[2,()=>has('hp_loc','pubic')],[3,()=>has('hp_add','yes')],[1,()=>has('trigger','sprintaccel')],[1,()=>has('onset','sudden')]]},
+      {name:"Tendinopathie fessière (grand trochanter)",tissue:"tendon",color:"#0d9488",cues:[[2,()=>has('hp_loc','troch')],[3,()=>has('hp_side','yes')],[1,()=>has('onset','gradual')],[1,()=>has('trigger','repetitive')]]},
+      {name:"Contrainte osseuse (col fémoral) à écarter",tissue:"flag",color:"#dc2626",cues:[[2,()=>has('bonePoint','yes')],[2,()=>has('loadChange','spike')],[1,()=>has('doseDependent','yes')],[1,()=>has('redflags','nightpain')]]},
+      {name:"Douleur lombaire référée",tissue:"nerve",color:"#7c3aed",cues:[[2,()=>has('hp_loc','glute')],[2,()=>has('radiation','yes')],[1,()=>has('neuroSx','tingling')]]},
+    ]},
+
+  thigh_ant:{ questions:[
+      {id:"q_mech",type:"single",label:"Circonstance de la douleur :",options:[["impact","Après un choc direct (béquille)"],["sprint","Pendant un sprint / un tir"],["gradual","Progressive"]]},
+    ], diagnoses:[
+      {name:"Lésion du quadriceps (droit fémoral)",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('onset','sudden')],[2,()=>has('q_mech','sprint')],[2,()=>has('stretchContract','yes')],[1,()=>has('trigger','sprintaccel')]]},
+      {name:"Contusion musculaire",tissue:"muscle",color:"#4f46e5",cues:[[3,()=>has('q_mech','impact')],[2,()=>has('onset','direct')],[2,()=>has('trigger','impact')]]},
+      {name:"Tendinopathie / douleur référée",tissue:"tendon",color:"#0d9488",cues:[[2,()=>has('q_mech','gradual')],[1,()=>has('onset','gradual')],[1,()=>has('warmup','yes')]]},
+    ]},
+
+  thigh_post:{ questions:[
+      {id:"ham_mech",type:"single",label:"Circonstance de la lésion :",options:[["sprint","Pendant un sprint à pleine vitesse"],["stretch","Lors d'un étirement extrême (grand écart, coup de pied haut)"],["gradual","Progressive"]]},
+      {id:"ham_sit",type:"single",label:"Douleur tout en haut, à l'assise (insertion sur l'ischion) ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Lésion des ischio-jambiers (type sprint)",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('onset','sudden')],[3,()=>has('ham_mech','sprint')],[2,()=>has('trigger','sprintaccel')],[1,()=>has('stretchContract','yes')]]},
+      {name:"Lésion d'étirement (semi-membraneux)",tissue:"muscle",color:"#4f46e5",cues:[[3,()=>has('ham_mech','stretch')],[2,()=>has('onset','sudden')]]},
+      {name:"Tendinopathie proximale des ischio",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('ham_sit','yes')],[2,()=>has('ham_mech','gradual')],[1,()=>has('onset','gradual')],[1,()=>has('warmup','yes')]]},
+      {name:"Référé lombaire / sciatique",tissue:"nerve",color:"#7c3aed",cues:[[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','tingling')],[1,()=>has('painType','neuro')]]},
+    ]},
+
+  knee:{ questions:[
+      {id:"kn_loc",type:"single",label:"Localisation précise :",options:[["ant_tendon","Juste sous la rotule (tendon rotulien)"],["ant_patellar","Autour / derrière la rotule"],["ant_quad","Au-dessus de la rotule"],["medial","Face interne"],["lateral","Face externe"],["post","Arrière (creux poplité)"]]},
+      {id:"kn_jump",type:"single",label:"Pire aux sauts / réceptions et dans les escaliers ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"kn_sit",type:"single",label:"Douleur en restant assis longtemps genou plié (signe du cinéma) ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"kn_twist",type:"single",label:"Apparue lors d'une torsion / pivot pied bloqué ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"kn_run",type:"single",label:"Douleur face externe survenant après une certaine distance de course ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Tendinopathie rotulienne (jumper's knee)",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('kn_loc','ant_tendon')],[2,()=>has('kn_jump','yes')],[2,()=>has('trigger','jumpland')],[2,()=>has('warmup','yes')],[1,()=>has('onset','gradual')],[1,()=>has('doseDependent','yes')]]},
+      {name:"Syndrome fémoro-patellaire",tissue:"joint",color:"#0891b2",cues:[[3,()=>has('kn_loc','ant_patellar')],[2,()=>has('kn_sit','yes')],[1,()=>has('kn_jump','yes')],[2,()=>has('onset','gradual')],[1,()=>has('trigger','repetitive')]]},
+      {name:"Lésion méniscale",tissue:"joint",color:"#4f46e5",cues:[[3,()=>has('kn_twist','yes')],[3,()=>has('jointSigns','locking')],[1,()=>has('jointSigns','swelling')],[1,()=>has('kn_loc','medial')],[1,()=>has('kn_loc','lateral')]]},
+      {name:"Entorse du LCA",tissue:"joint",color:"#dc2626",cues:[[2,()=>has('kn_twist','yes')],[3,()=>has('jointSigns','instability')],[2,()=>has('jointSigns','swelling')],[2,()=>has('onset','sudden')],[1,()=>has('trigger','jumpland')]]},
+      {name:"Tendinopathie quadricipitale",tissue:"tendon",color:"#14b8a6",cues:[[3,()=>has('kn_loc','ant_quad')],[1,()=>has('kn_jump','yes')],[1,()=>has('onset','gradual')],[1,()=>has('warmup','yes')]]},
+      {name:"Syndrome de la bandelette ilio-tibiale",tissue:"tendon",color:"#b45309",cues:[[2,()=>has('kn_loc','lateral')],[3,()=>has('kn_run','yes')],[2,()=>has('trigger','repetitive')],[1,()=>has('onset','gradual')]]},
+    ]},
+
+  leg_post:{ questions:[
+      {id:"cf_loc",type:"single",label:"Localisation :",options:[["achilles","Tendon d'Achille (arrière de la cheville)"],["belly","Corps du mollet"],["deep","Profond / interne"]]},
+      {id:"cf_morning",type:"single",label:"Raideur / douleur du tendon aux premiers pas le matin ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"cf_pop",type:"single",label:"Sensation de coup de fouet / claquement dans le mollet ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"cf_dvt",type:"single",label:"Mollet gonflé, chaud, douloureux même au repos ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Tendinopathie d'Achille",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('cf_loc','achilles')],[3,()=>has('cf_morning','yes')],[2,()=>has('warmup','yes')],[1,()=>has('onset','gradual')],[1,()=>has('doseDependent','yes')]]},
+      {name:"Lésion du mollet (tennis leg)",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('cf_pop','yes')],[2,()=>has('cf_loc','belly')],[2,()=>has('onset','sudden')],[1,()=>has('trigger','sprintaccel')]]},
+      {name:"Contrainte osseuse tibiale",tissue:"bone",color:"#b45309",cues:[[2,()=>has('bonePoint','yes')],[2,()=>has('loadChange','spike')],[1,()=>has('doseDependent','yes')]]},
+      {name:"Mollet gonflé/chaud — écarter une TVP",tissue:"flag",color:"#dc2626",cues:[[3,()=>has('cf_dvt','yes')],[1,()=>has('redflags','nightpain')]]},
+    ]},
+
+  leg_ant:{ questions:[
+      {id:"sa_loc",type:"single",label:"Type de douleur de jambe :",options:[["medial_diffuse","Bord interne du tibia, diffuse sur plusieurs cm"],["focal","Point précis très localisé"],["anterior","Loge antérieure / externe"]]},
+      {id:"sa_effort",type:"single",label:"Tension / engourdissement apparaissant après quelques minutes de course, cédant au repos ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Périostite tibiale (MTSS)",tissue:"bone",color:"#0d9488",cues:[[3,()=>has('sa_loc','medial_diffuse')],[2,()=>has('onset','gradual')],[2,()=>has('loadChange','spike')],[1,()=>has('doseDependent','yes')]]},
+      {name:"Fracture de fatigue tibiale à écarter",tissue:"flag",color:"#dc2626",cues:[[3,()=>has('sa_loc','focal')],[2,()=>has('bonePoint','yes')],[1,()=>has('redflags','nightpain')],[1,()=>has('loadChange','spike')],[1,()=>has('doseDependent','yes')]]},
+      {name:"Syndrome de loge d'effort",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('sa_effort','yes')],[1,()=>has('sa_loc','anterior')]]},
+    ]},
+
+  ankle:{ questions:[
+      {id:"ak_mech",type:"single",label:"Mécanisme :",options:[["inv","Torsion du pied vers l'intérieur (entorse)"],["direct","Choc direct"],["gradual","Progressif"]]},
+      {id:"ak_loc",type:"single",label:"Localisation :",options:[["lateral","Face externe"],["medial","Face interne"],["ant","Avant"],["achil","Arrière"]]},
+      {id:"ak_weight",type:"single",label:"Pouvez-vous prendre appui et faire 4 pas ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Entorse latérale de cheville",tissue:"joint",color:"#0d9488",cues:[[3,()=>has('ak_mech','inv')],[2,()=>has('ak_loc','lateral')],[2,()=>has('onset','sudden')],[2,()=>has('jointSigns','swelling')]]},
+      {name:"Fracture à écarter (règle d'Ottawa)",tissue:"flag",color:"#dc2626",cues:[[3,()=>has('ak_weight','no')],[2,()=>has('bonePoint','yes')],[1,()=>has('ak_mech','inv')]]},
+      {name:"Tendinopathie (fibulaires / tibial post.)",tissue:"tendon",color:"#0891b2",cues:[[2,()=>has('ak_mech','gradual')],[1,()=>has('warmup','yes')],[1,()=>has('doseDependent','yes')],[1,()=>has('onset','gradual')]]},
+      {name:"Instabilité chronique de cheville",tissue:"joint",color:"#4f46e5",cues:[[2,()=>has('jointSigns','instability')],[1,()=>has('duration','persistent')]]},
+    ]},
+
+  foot:{ questions:[
+      {id:"ft_loc",type:"single",label:"Localisation :",options:[["heel","Talon (dessous)"],["arch","Voûte plantaire"],["forefoot","Avant-pied / orteils"],["dorsal","Dessus du pied"]]},
+      {id:"ft_firststep",type:"single",label:"Douleur sous le talon aux premiers pas le matin ?",options:[["yes","Oui"],["no","Non"]]},
+      {id:"ft_burn",type:"single",label:"Brûlure / engourdissement entre les orteils ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Fasciite plantaire",tissue:"tendon",color:"#0d9488",cues:[[3,()=>has('ft_firststep','yes')],[2,()=>has('ft_loc','heel')],[1,()=>has('onset','gradual')]]},
+      {name:"Fracture de fatigue métatarsienne à écarter",tissue:"flag",color:"#dc2626",cues:[[2,()=>has('ft_loc','forefoot')],[3,()=>has('bonePoint','yes')],[1,()=>has('loadChange','spike')],[1,()=>has('doseDependent','yes')]]},
+      {name:"Névrome de Morton",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('ft_burn','yes')],[1,()=>has('ft_loc','forefoot')]]},
+      {name:"Aponévrosite / tendinopathie (voûte)",tissue:"tendon",color:"#0891b2",cues:[[2,()=>has('ft_loc','arch')],[1,()=>has('warmup','yes')],[1,()=>has('onset','gradual')]]},
+    ]},
+};
+
+/* =========================================================================
+   4. ÉTAT + PERSISTANCE
+   ========================================================================= */
+const STORAGE_KEY = "physio_bilan_v2";
+let state = loadState();
+let stepIndex = 0;
+function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; } }
 function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
 
 /* =========================================================================
-   RENDU DU QUESTIONNAIRE
+   5. QUESTIONS ACTIVES (tronc commun + région sélectionnée)
+   ========================================================================= */
+function allQuestions(){
+  const qs = CORE_QUESTIONS.slice();
+  const rd = state.region && REGION_DATA[state.region];
+  if(rd){ rd.questions.forEach(q=>qs.push(Object.assign({}, q, {region:state.region, section:"Précisions sur la zone"}))); }
+  return qs;
+}
+function visibleQuestions(){ return allQuestions().filter(q => !q.show || q.show(state)); }
+function orderedSections(){
+  const present=[];
+  visibleQuestions().forEach(q=>{ if(!present.includes(q.section)) present.push(q.section); });
+  present.sort((a,b)=>SECTION_ORDER.indexOf(a)-SECTION_ORDER.indexOf(b));
+  return ["Zone douloureuse", ...present];
+}
+
+/* =========================================================================
+   6. CARTOGRAPHIE CORPORELLE (SVG cliquable : face / dos / profil)
+   ========================================================================= */
+function z(tag, region, attrs){ return `<${tag} class="zone" data-region="${region}" ${attrs}></${tag}>`; }
+function d(tag, attrs){ return `<${tag} class="deco" ${attrs}></${tag}>`; }
+
+function svgFront(){
+  return `<svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+    ${z('ellipse','neck','cx="100" cy="30" rx="19" ry="22"')}
+    ${z('rect','neck','x="91" y="49" width="18" height="15" rx="4"')}
+    ${z('ellipse','shoulder','cx="72" cy="80" rx="16" ry="13"')}${z('ellipse','shoulder','cx="128" cy="80" rx="16" ry="13"')}
+    ${z('rect','shoulder','x="54" y="82" width="14" height="52" rx="7"')}${z('rect','shoulder','x="132" y="82" width="14" height="52" rx="7"')}
+    ${z('rect','thoracic','x="80" y="70" width="40" height="56" rx="10"')}
+    ${z('rect','hip_groin','x="82" y="128" width="36" height="52" rx="10"')}
+    ${z('ellipse','elbow','cx="61" cy="140" rx="9" ry="9"')}${z('ellipse','elbow','cx="139" cy="140" rx="9" ry="9"')}
+    ${z('rect','wrist_hand','x="52" y="146" width="13" height="50" rx="6"')}${z('rect','wrist_hand','x="135" y="146" width="13" height="50" rx="6"')}
+    ${z('ellipse','wrist_hand','cx="58" cy="202" rx="8" ry="9"')}${z('ellipse','wrist_hand','cx="142" cy="202" rx="8" ry="9"')}
+    ${z('rect','thigh_ant','x="80" y="182" width="17" height="76" rx="8"')}${z('rect','thigh_ant','x="103" y="182" width="17" height="76" rx="8"')}
+    ${z('ellipse','knee','cx="88" cy="266" rx="11" ry="11"')}${z('ellipse','knee','cx="112" cy="266" rx="11" ry="11"')}
+    ${z('rect','leg_ant','x="81" y="276" width="14" height="74" rx="6"')}${z('rect','leg_ant','x="105" y="276" width="14" height="74" rx="6"')}
+    ${z('ellipse','ankle','cx="88" cy="358" rx="8" ry="8"')}${z('ellipse','ankle','cx="112" cy="358" rx="8" ry="8"')}
+    ${z('ellipse','foot','cx="85" cy="378" rx="11" ry="8"')}${z('ellipse','foot','cx="115" cy="378" rx="11" ry="8"')}
+  </svg>`;
+}
+function svgBack(){
+  return `<svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+    ${z('ellipse','neck','cx="100" cy="30" rx="19" ry="22"')}
+    ${z('rect','neck','x="91" y="49" width="18" height="15" rx="4"')}
+    ${z('ellipse','shoulder','cx="72" cy="80" rx="16" ry="13"')}${z('ellipse','shoulder','cx="128" cy="80" rx="16" ry="13"')}
+    ${z('rect','shoulder','x="54" y="82" width="14" height="52" rx="7"')}${z('rect','shoulder','x="132" y="82" width="14" height="52" rx="7"')}
+    ${z('rect','thoracic','x="80" y="70" width="40" height="44" rx="10"')}
+    ${z('rect','lumbar','x="83" y="114" width="34" height="32" rx="8"')}
+    ${z('rect','hip_groin','x="80" y="146" width="40" height="36" rx="12"')}
+    ${z('ellipse','elbow','cx="61" cy="140" rx="9" ry="9"')}${z('ellipse','elbow','cx="139" cy="140" rx="9" ry="9"')}
+    ${z('rect','wrist_hand','x="52" y="146" width="13" height="50" rx="6"')}${z('rect','wrist_hand','x="135" y="146" width="13" height="50" rx="6"')}
+    ${z('ellipse','wrist_hand','cx="58" cy="202" rx="8" ry="9"')}${z('ellipse','wrist_hand','cx="142" cy="202" rx="8" ry="9"')}
+    ${z('rect','thigh_post','x="80" y="184" width="17" height="74" rx="8"')}${z('rect','thigh_post','x="103" y="184" width="17" height="74" rx="8"')}
+    ${z('ellipse','knee','cx="88" cy="266" rx="11" ry="11"')}${z('ellipse','knee','cx="112" cy="266" rx="11" ry="11"')}
+    ${z('rect','leg_post','x="81" y="276" width="14" height="74" rx="6"')}${z('rect','leg_post','x="105" y="276" width="14" height="74" rx="6"')}
+    ${z('ellipse','ankle','cx="88" cy="358" rx="8" ry="8"')}${z('ellipse','ankle','cx="112" cy="358" rx="8" ry="8"')}
+    ${z('ellipse','foot','cx="85" cy="378" rx="11" ry="8"')}${z('ellipse','foot','cx="115" cy="378" rx="11" ry="8"')}
+  </svg>`;
+}
+function svgSide(){
+  return `<svg viewBox="0 0 130 400" xmlns="http://www.w3.org/2000/svg">
+    ${z('ellipse','neck','cx="58" cy="30" rx="17" ry="20"')}
+    ${z('rect','neck','x="52" y="48" width="16" height="14" rx="4"')}
+    ${z('ellipse','shoulder','cx="64" cy="82" rx="12" ry="13"')}
+    ${z('rect','thoracic','x="46" y="68" width="34" height="46" rx="8"')}
+    ${z('rect','lumbar','x="48" y="114" width="30" height="30" rx="8"')}
+    ${z('rect','hip_groin','x="46" y="144" width="36" height="34" rx="12"')}
+    ${d('rect','x="50" y="180" width="24" height="76" rx="10"')}
+    ${z('ellipse','knee','cx="60" cy="266" rx="11" ry="11"')}
+    ${z('rect','leg_post','x="51" y="276" width="16" height="74" rx="6"')}
+    ${z('ellipse','ankle','cx="60" cy="358" rx="8" ry="8"')}
+    ${z('ellipse','foot','cx="68" cy="378" rx="14" ry="8"')}
+  </svg>`;
+}
+
+function renderBodyMap(){
+  const sel = state.region ? `Zone sélectionnée : <b>${REGION_LABELS[state.region]}</b>` : `<span style="color:var(--muted)">Aucune zone sélectionnée — cliquez sur le schéma.</span>`;
+  return `<div class="section-title"><span class="num">1</span>Zone douloureuse</div>
+    <div class="bm-intro">Où avez-vous mal ?</div>
+    <div class="bm-help">Cliquez sur la région douloureuse (vues face, dos et profil). Les questions s'adapteront ensuite à cette zone.</div>
+    <div class="bm-wrap">
+      <figure class="bm-fig" style="margin:0">${svgFront()}<figcaption>Face</figcaption></figure>
+      <figure class="bm-fig" style="margin:0">${svgBack()}<figcaption>Dos</figcaption></figure>
+      <figure class="bm-fig" style="margin:0">${svgSide()}<figcaption>Profil</figcaption></figure>
+    </div>
+    <div class="bm-selected">${sel}</div>`;
+}
+
+/* =========================================================================
+   7. RENDU
    ========================================================================= */
 const form = document.getElementById('form');
 
-function visibleQuestions(){
-  return QUESTIONS.filter(q => !q.show || q.show(state));
-}
-
-/* familles (sections) actuellement visibles, dans l'ordre, sans doublon */
-function orderedSections(){
-  const secs = [];
-  visibleQuestions().forEach(q=>{ if(!secs.includes(q.section)) secs.push(q.section); });
-  return secs;
-}
-
 function render(){
   const sections = orderedSections();
-  // garder l'étape dans les bornes (les questions adaptatives peuvent ajouter/retirer des familles)
-  if(stepIndex >= sections.length) stepIndex = sections.length - 1;
+  if(stepIndex >= sections.length) stepIndex = sections.length-1;
   if(stepIndex < 0) stepIndex = 0;
-
   const currentSection = sections[stepIndex];
-  const sectionQs = visibleQuestions().filter(q=>q.section===currentSection);
 
-  let html = `<div class="section-title"><span class="num">${stepIndex+1}</span>${currentSection}</div>`;
-  sectionQs.forEach(q=>{
-    html += `<div class="q" data-id="${q.id}">
-      <div class="label">${q.label}</div>
-      ${q.help?`<div class="help">${q.help}</div>`:""}
-      ${renderInput(q)}
-    </div>`;
-  });
-  form.innerHTML = html;
+  if(currentSection === "Zone douloureuse"){
+    form.innerHTML = renderBodyMap();
+    form.querySelectorAll('.zone').forEach(el=>{ if(el.dataset.region===state.region) el.classList.add('sel'); });
+  } else {
+    const sectionQs = visibleQuestions().filter(q=>q.section===currentSection);
+    let html = `<div class="section-title"><span class="num">${stepIndex+1}</span>${currentSection}</div>`;
+    sectionQs.forEach(q=>{
+      html += `<div class="q" data-id="${q.id}"><div class="label">${q.label}</div>${q.help?`<div class="help">${q.help}</div>`:""}${renderInput(q)}</div>`;
+    });
+    form.innerHTML = html;
+  }
   renderNav(sections);
-  updateProgress();
+  updateProgress(sections);
   compute();
 }
 
-/* état des boutons Précédent / Suivant */
 function renderNav(sections){
-  const prev = document.getElementById('prev');
-  const next = document.getElementById('next');
-  const last = stepIndex === sections.length - 1;
-  prev.disabled = stepIndex === 0;
-  next.disabled = last;
+  const prev=document.getElementById('prev'), next=document.getElementById('next');
+  const last = stepIndex === sections.length-1;
+  prev.disabled = stepIndex===0;
+  const onBodyMap = sections[stepIndex]==="Zone douloureuse";
+  next.disabled = last || (onBodyMap && !state.region);
   next.textContent = last ? 'Terminé ✓' : 'Suivant →';
 }
 
 function goStep(delta){
   const sections = orderedSections();
-  const t = stepIndex + delta;
-  if(t < 0 || t > sections.length - 1) return;
-  stepIndex = t;
-  render();
-  window.scrollTo({top:0, behavior:'smooth'});
+  const t = stepIndex+delta;
+  if(t<0 || t>sections.length-1) return;
+  stepIndex=t; render(); window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function renderInput(q){
-  const v = state[q.id];
-  if(q.type==='single' || q.type==='multi'){
-    const isMulti = q.type==='multi';
-    const danger = q.id==='redflags';
-    return `<div class="opts">` + q.options.map(([val,lab])=>{
-      const checked = isMulti ? (Array.isArray(v)&&v.includes(val)) : v===val;
-      return `<label class="opt ${danger&&val!=='none'?'danger':''}">
-        <input type="${isMulti?'checkbox':'radio'}" name="${q.id}" value="${val}" ${checked?'checked':''}>
-        <span>${lab}</span></label>`;
-    }).join("") + `</div>`;
+  const v=state[q.id];
+  if(q.type==='single'||q.type==='multi'){
+    const isMulti=q.type==='multi', danger=q.id==='redflags';
+    return `<div class="opts">`+q.options.map(([val,lab])=>{
+      const checked=isMulti?(Array.isArray(v)&&v.includes(val)):v===val;
+      return `<label class="opt ${danger&&val!=='none'?'danger':''}"><input type="${isMulti?'checkbox':'radio'}" name="${q.id}" value="${val}" ${checked?'checked':''}><span>${lab}</span></label>`;
+    }).join("")+`</div>`;
   }
   if(q.type==='scale'){
-    let s = `<div class="scale">`;
-    for(let i=0;i<=q.max;i++){
-      s += `<label class="opt"><input type="radio" name="${q.id}" value="${i}" ${String(v)===String(i)?'checked':''}><span>${i}</span></label>`;
-    }
-    return s + `</div>`;
+    let s=`<div class="scale">`;
+    for(let i=0;i<=q.max;i++) s+=`<label class="opt"><input type="radio" name="${q.id}" value="${i}" ${String(v)===String(i)?'checked':''}><span>${i}</span></label>`;
+    return s+`</div>`;
   }
-  if(q.type==='number'){
-    return `<input type="number" name="${q.id}" value="${v??''}" min="${q.min??''}" max="${q.max??''}" placeholder="…">`;
-  }
-  if(q.type==='select'){
-    return `<select name="${q.id}"><option value="">— Choisir —</option>` +
-      q.options.map(([val,lab])=>`<option value="${val}" ${v===val?'selected':''}>${lab}</option>`).join("") + `</select>`;
-  }
-  if(q.type==='text'){
-    return `<input type="text" name="${q.id}" value="${v??''}" placeholder="…">`;
-  }
+  if(q.type==='number') return `<input type="number" name="${q.id}" value="${v??''}" min="${q.min??''}" max="${q.max??''}" placeholder="…">`;
+  if(q.type==='text') return `<input type="text" name="${q.id}" value="${v??''}" placeholder="…">`;
   return "";
 }
 
-/* gestion des réponses */
+/* clic sur la cartographie corporelle */
+form.addEventListener('click', e=>{
+  const zone = e.target.closest('.zone');
+  if(!zone) return;
+  state.region = zone.dataset.region;
+  saveState(); render();
+});
+
+/* réponses aux questions */
 form.addEventListener('change', e=>{
-  const el = e.target;
-  const id = el.name;
-  const q = QUESTIONS.find(x=>x.id===id);
+  const el=e.target, id=el.name;
+  const q=allQuestions().find(x=>x.id===id);
   if(!q) return;
   if(q.type==='multi'){
-    let arr = Array.isArray(state[id]) ? [...state[id]] : [];
-    if(el.value==='none' || el.value==='nonNeuro' || el.value==='nojoint'){
-      arr = el.checked ? [el.value] : [];
-    }else{
-      arr = arr.filter(x=>x!=='none'&&x!=='nonNeuro'&&x!=='nojoint');
-      if(el.checked) arr.push(el.value); else arr = arr.filter(x=>x!==el.value);
-    }
+    let arr=Array.isArray(state[id])?[...state[id]]:[];
+    if(el.value==='none'||el.value==='nonNeuro'||el.value==='nojoint'){ arr=el.checked?[el.value]:[]; }
+    else{ arr=arr.filter(x=>x!=='none'&&x!=='nonNeuro'&&x!=='nojoint'); if(el.checked)arr.push(el.value); else arr=arr.filter(x=>x!==el.value); }
     state[id]=arr;
-  }else{
+  } else {
     state[id]= el.type==='number' ? (el.value===''?undefined:Number(el.value)) : el.value;
   }
   saveState();
-  // certaines réponses ouvrent/ferment des questions -> re-render de l'étape
   if(['radiation','painType','onset','trigger'].includes(id)) render();
-  else { updateProgress(); compute(); }
+  else { updateProgress(orderedSections()); compute(); }
 });
 
-function updateProgress(){
-  const sections = orderedSections();
-  const total = sections.length || 1;
-  document.getElementById('progress').style.width = ((stepIndex+1)/total*100)+'%';
-
-  const qs = visibleQuestions().filter(q=>q.section===sections[stepIndex]);
-  const done = qs.filter(q=>{
-    const v=state[q.id];
-    return Array.isArray(v)?v.length>0:(v!==undefined&&v!=='');
-  }).length;
-  document.getElementById('answeredCount').textContent =
-    `Étape ${stepIndex+1}/${total} · ${done}/${qs.length} répondu`;
+function updateProgress(sections){
+  const total=sections.length||1;
+  document.getElementById('progress').style.width=((stepIndex+1)/total*100)+'%';
+  if(sections[stepIndex]==="Zone douloureuse"){
+    document.getElementById('answeredCount').textContent=`Étape 1/${total} · ${state.region?'zone choisie':'choisir la zone'}`;
+    return;
+  }
+  const qs=visibleQuestions().filter(q=>q.section===sections[stepIndex]);
+  const done=qs.filter(q=>{const v=state[q.id];return Array.isArray(v)?v.length>0:(v!==undefined&&v!=='');}).length;
+  document.getElementById('answeredCount').textContent=`Étape ${stepIndex+1}/${total} · ${done}/${qs.length} répondu`;
 }
 
 /* =========================================================================
-   MOTEUR DE RAISONNEMENT CLINIQUE
+   8. MOTEUR DE RAISONNEMENT
    ========================================================================= */
-function has(id,val){ const v=state[id]; return Array.isArray(v)?v.includes(val):v===val; }
-function any(id){ const v=state[id]; return Array.isArray(v)?v.length>0:(v!==undefined&&v!==''); }
-
 function compute(){
-  const out = document.getElementById('result');
-  const answered = QUESTIONS.filter(q=>any(q.id)).length;
-  if(answered < 2){
-    out.innerHTML = `<div class="empty"><span class="big">🩺</span>Commencez à répondre : l'orientation s'affichera ici et s'affinera à chaque réponse.</div>`;
+  const out=document.getElementById('result');
+  if(!state.region){
+    out.innerHTML=`<div class="empty"><span class="big">🩺</span>Sélectionnez la zone douloureuse sur le schéma pour démarrer une orientation ciblée.</div>`;
     return;
   }
 
-  /* ---------- Drapeaux rouges ---------- */
-  const rf = Array.isArray(state.redflags)? state.redflags.filter(x=>x!=='none') : [];
-  const rfLabels = {
-    trauma:"Suspicion de fracture (traumatisme + appui impossible)",
-    nightpain:"Douleur nocturne constante non mécanique",
-    systemic:"Signes généraux / antécédent de cancer",
-    cauda:"Suspicion de syndrome de la queue de cheval — URGENCE",
-    neuroprog:"Déficit neurologique progressif",
-    infection:"Suspicion d'arthrite septique / infection"
-  };
+  /* drapeaux rouges */
+  const rf=Array.isArray(state.redflags)?state.redflags.filter(x=>x!=='none'):[];
+  const rfLabels={trauma:"Suspicion de fracture (traumatisme + appui impossible)",nightpain:"Douleur nocturne constante non mécanique",systemic:"Signes généraux / antécédent de cancer",cauda:"Suspicion de syndrome de la queue de cheval — URGENCE",neuroprog:"Déficit neurologique progressif",infection:"Suspicion d'arthrite septique / infection"};
 
-  /* ---------- Mécanismes de douleur ---------- */
-  let noci=0, neuro=0, nopl=0;
-  if(has('painType','mechanical')) noci+=3;
-  if(has('doseDependent','yes')) noci+=2;
-  if(has('doseDependent','partly')) noci+=1;
-  if(has('localisation','localized')) noci+=2;
-  if(has('warmup','yes')) noci+=1;
-  if(has('limitation','continue')) noci+=1;
+  /* mécanisme de douleur (indépendant de la région) */
+  let noci=0,neuro=0,nopl=0;
+  if(has('painType','mechanical'))noci+=3; if(has('doseDependent','yes'))noci+=2; if(has('doseDependent','partly'))noci+=1;
+  if(has('localisation','localized'))noci+=2; if(has('warmup','yes'))noci+=1; if(has('limitation','continue'))noci+=1;
+  if(has('painType','neuro'))neuro+=3; if(has('radiation','yes'))neuro+=3; if(has('neuroSx','tingling'))neuro+=2; if(has('neuroSx','numbness'))neuro+=2; if(has('neuroSx','weakness'))neuro+=1;
+  if(has('disproportionate','yes'))nopl+=3; if(has('disproportionate','sometimes'))nopl+=1; if(has('widespread','yes'))nopl+=3;
+  if(has('hypersensitivity','yes'))nopl+=3; if(has('hypersensitivity','mild'))nopl+=1; if(has('sleepStress','yes'))nopl+=1; if(has('painType','deep'))nopl+=1; if(has('duration','persistent'))nopl+=1;
+  const mechTotal=noci+neuro+nopl||1;
+  const mech=[{name:'Nociceptif',v:noci,c:'#0d9488'},{name:'Neuropathique',v:neuro,c:'#7c3aed'},{name:'Nociplastique',v:nopl,c:'#dc2626'}].sort((a,b)=>b.v-a.v);
 
-  if(has('painType','neuro')) neuro+=3;
-  if(has('radiation','yes')) neuro+=3;
-  if(has('neuroSx','tingling')) neuro+=2;
-  if(has('neuroSx','numbness')) neuro+=2;
-  if(has('neuroSx','weakness')) neuro+=1;
+  /* hypothèses ciblées par région */
+  const rd=REGION_DATA[state.region];
+  const hyps=rd.diagnoses.map(diag=>{
+    let score=0,max=0;
+    diag.cues.forEach(([w,fn])=>{ if(w>0)max+=w; if(fn())score+=w; });
+    return {name:diag.name,color:diag.color,tissue:diag.tissue,raw:score,pct:max?Math.max(0,Math.round(score/max*100)):0};
+  }).filter(h=>h.raw>0).sort((a,b)=>b.pct-a.pct);
 
-  if(has('disproportionate','yes')) nopl+=3;
-  if(has('disproportionate','sometimes')) nopl+=1;
-  if(has('widespread','yes')) nopl+=3;
-  if(has('hypersensitivity','yes')) nopl+=3;
-  if(has('hypersensitivity','mild')) nopl+=1;
-  if(has('sleepStress','yes')) nopl+=1;
-  if(has('painType','deep')) nopl+=1;
-  if(has('duration','persistent')) nopl+=1;
+  /* irritabilité (Maitland) */
+  let irrScore=0; const pn=Number(state.painNow),pm=Number(state.painMax);
+  if(!isNaN(pn))irrScore+=pn>=7?2:pn>=4?1:0; if(!isNaN(pm))irrScore+=pm>=8?1:0;
+  if(has('settle','hours'))irrScore+=2; else if(has('settle','minutes'))irrScore+=1;
+  if(has('limitation','stop'))irrScore+=2; else if(has('limitation','reduce'))irrScore+=1;
+  const irr=irrScore>=4?'high':irrScore>=2?'mod':'low';
 
-  const mechTotal = noci+neuro+nopl || 1;
-  const mech = [
-    {key:'noci', name:'Nociceptif', v:noci, c:'#0d9488'},
-    {key:'neuro',name:'Neuropathique', v:neuro, c:'#7c3aed'},
-    {key:'nopl', name:'Nociplastique', v:nopl, c:'#dc2626'},
-  ].sort((a,b)=>b.v-a.v);
-
-  /* ---------- Hypothèses tissulaires ---------- */
-  // Tendinopathie
-  let tendon=0;
-  if(has('onset','gradual')) tendon+=2;
-  if(has('trigger','repetitive')) tendon+=2;
-  if(has('loadChange','spike')) tendon+=2;
-  if(has('loadChange','slight')) tendon+=1;
-  if(has('doseDependent','yes')) tendon+=2;
-  if(has('warmup','yes')) tendon+=3;
-  if(has('localisation','localized')) tendon+=1;
-  if(has('painType','mechanical')) tendon+=1;
-
-  // Lésion musculaire
-  let muscle=0;
-  if(has('onset','sudden')) muscle+=3;
-  if(has('trigger','sprintaccel')) muscle+=2;
-  if(has('trigger','jumpland')) muscle+=1;
-  if(has('stretchContract','yes')) muscle+=3;
-  if(has('localisation','localized')) muscle+=1;
-  if(has('duration','acute')) muscle+=1;
-
-  // Contrainte osseuse (bone stress)
-  let bone=0;
-  if(has('bonePoint','yes')) bone+=3;
-  if(has('onset','gradual')) bone+=1;
-  if(has('loadChange','spike')) bone+=2;
-  if(has('doseDependent','yes')) bone+=1;
-  if(has('trigger','impact')||has('trigger','jumpland')) bone+=1;
-  if(has('nightpain')) bone+=1; // douleur osseuse possible
-  if(has('redflags','nightpain')) bone+=1;
-
-  // Atteinte articulaire / ligamentaire
-  let joint=0;
-  if(has('jointSigns','swelling')) joint+=2;
-  if(has('jointSigns','instability')) joint+=3;
-  if(has('jointSigns','locking')) joint+=3;
-  if(has('onset','direct')) joint+=2;
-  if(has('trigger','jumpland')) joint+=1;
-  if(has('trigger','impact')) joint+=1;
-
-  // Douleur neurogène / radiculaire
-  let nerve=0;
-  if(has('radiation','yes')) nerve+=3;
-  if(has('painType','neuro')) nerve+=3;
-  if(has('neuroSx','tingling')) nerve+=2;
-  if(has('neuroSx','numbness')) nerve+=2;
-  if(has('neuroSx','weakness')) nerve+=1;
-
-  // Profil nociplastique (composante de sensibilisation)
-  let central=0;
-  if(has('disproportionate','yes')) central+=3;
-  if(has('widespread','yes')) central+=3;
-  if(has('hypersensitivity','yes')) central+=2;
-  if(has('sleepStress','yes')) central+=1;
-  if(has('duration','persistent')) central+=1;
-
-  const hyps = [
-    {name:'Tendinopathie', v:tendon, max:13, c:'#0d9488'},
-    {name:'Lésion musculaire', v:muscle, max:11, c:'#0891b2'},
-    {name:'Contrainte osseuse (bone stress)', v:bone, max:9, c:'#b45309'},
-    {name:'Atteinte articulaire / ligamentaire', v:joint, max:10, c:'#4f46e5'},
-    {name:'Douleur neurogène / radiculaire', v:nerve, max:11, c:'#7c3aed'},
-    {name:'Sensibilisation centrale (nociplastique)', v:central, max:10, c:'#dc2626'},
-  ].map(h=>({...h, pct: Math.min(100, Math.round(h.v/h.max*100))}))
-   .filter(h=>h.v>0)
-   .sort((a,b)=>b.pct-a.pct);
-
-  /* ---------- Irritabilité (Maitland) ---------- */
-  let irrScore=0;
-  const pn=Number(state.painNow), pm=Number(state.painMax);
-  if(!isNaN(pn)) irrScore += pn>=7?2:pn>=4?1:0;
-  if(!isNaN(pm)) irrScore += pm>=8?1:0;
-  if(has('settle','hours')) irrScore+=2;
-  else if(has('settle','minutes')) irrScore+=1;
-  if(has('limitation','stop')) irrScore+=2;
-  else if(has('limitation','reduce')) irrScore+=1;
-  const irr = irrScore>=4?'high':irrScore>=2?'mod':'low';
-
-  /* ---------- Stade ---------- */
+  /* stade */
   let stage=null;
-  if(has('duration','acute')) stage={cls:'acute',txt:'Aigu (< 6 sem.)'};
-  else if(has('duration','subacute')) stage={cls:'sub',txt:'Subaigu (6 sem.–3 mois)'};
-  else if(has('duration','persistent')) stage={cls:'persist',txt:'Persistant (> 3 mois)'};
+  if(has('duration','acute'))stage={cls:'acute',txt:'Aigu (< 6 sem.)'};
+  else if(has('duration','subacute'))stage={cls:'sub',txt:'Subaigu (6 sem.–3 mois)'};
+  else if(has('duration','persistent'))stage={cls:'persist',txt:'Persistant (> 3 mois)'};
 
-  /* ---------- Drapeaux jaunes ---------- */
+  /* drapeaux jaunes */
   const yellow=[];
-  if(Number(state.fear)>=7) yellow.push("Peur du mouvement élevée (peur-évitement)");
-  if(has('recovery','yes')) yellow.push("Attentes négatives de guérison");
-  if(has('sleepStress','yes')) yellow.push("Stress / sommeil perturbé");
+  if(Number(state.fear)>=7)yellow.push("Peur du mouvement élevée (peur-évitement)");
+  if(has('recovery','yes'))yellow.push("Attentes négatives de guérison");
+  if(has('sleepStress','yes'))yellow.push("Stress / sommeil perturbé");
 
-  /* ---------- Conduite à tenir ---------- */
-  const advice = buildAdvice(rf, hyps, irr, mech[0]);
+  /* rendu */
+  let html=`<div class="regionTag">📍 ${REGION_LABELS[state.region]}</div>`;
 
-  /* ---------- RENDU ---------- */
-  let html="";
-
-  // drapeaux rouges
   if(rf.length){
-    html += `<div class="alert red"><span class="ico">⚠️</span><div><b>Drapeau(x) rouge(s) détecté(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
-      + rf.map(k=>`<li>${rfLabels[k]||k}</li>`).join("")
-      + `</ul><div style="margin-top:6px">Une évaluation médicale est recommandée avant de poursuivre la rééducation${rf.includes('cauda')?' — en urgence pour la suspicion de queue de cheval.':'.'}</div></div></div>`;
+    html+=`<div class="alert red"><span class="ico">⚠️</span><div><b>Drapeau(x) rouge(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
+      +rf.map(k=>`<li>${rfLabels[k]||k}</li>`).join("")
+      +`</ul><div style="margin-top:6px">Évaluation médicale recommandée avant de poursuivre la rééducation${rf.includes('cauda')?' — en urgence (queue de cheval).':'.'}</div></div></div>`;
   } else if(any('redflags')){
-    html += `<div class="alert ok"><span class="ico">✓</span><div>Aucun drapeau rouge signalé.</div></div>`;
+    html+=`<div class="alert ok"><span class="ico">✓</span><div>Aucun drapeau rouge signalé.</div></div>`;
   }
 
-  // stade
-  if(stage){
-    html += `<div class="block"><div class="bt">Stade</div><span class="badge ${stage.cls}">${stage.txt}</span></div>`;
-  }
+  if(stage) html+=`<div class="block"><div class="bt">Stade</div><span class="badge ${stage.cls}">${stage.txt}</span></div>`;
 
-  // mécanisme
   if(mechTotal>1){
-    html += `<div class="block"><div class="bt">Mécanisme de la douleur</div><div class="mech">`
-      + mech.map(m=>`<div class="m"><span>${m.name}</span><div class="meter"><i style="width:${Math.round(m.v/mechTotal*100)}%;background:${m.c}"></i></div><span>${Math.round(m.v/mechTotal*100)}%</span></div>`).join("")
-      + `</div></div>`;
+    html+=`<div class="block"><div class="bt">Mécanisme de la douleur</div><div class="mech">`
+      +mech.map(m=>`<div class="m"><span>${m.name}</span><div class="meter"><i style="width:${Math.round(m.v/mechTotal*100)}%;background:${m.c}"></i></div><span>${Math.round(m.v/mechTotal*100)}%</span></div>`).join("")+`</div></div>`;
   }
 
-  // hypothèses
   if(hyps.length){
-    html += `<div class="block"><div class="bt">Hypothèses tissulaires <span>classées</span></div>`;
-    hyps.slice(0,4).forEach(h=>{
-      html += `<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.c}"></i></div></div>`;
-    });
-    html += `</div>`;
+    html+=`<div class="block"><div class="bt">Hypothèses diagnostiques <span>${REGION_LABELS[state.region]}</span></div>`;
+    hyps.slice(0,4).forEach(h=>{ html+=`<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.color}"></i></div></div>`; });
+    html+=`</div>`;
+  } else {
+    html+=`<div class="block"><div class="bt">Hypothèses diagnostiques</div><div class="empty" style="padding:14px">Répondez aux questions de la zone pour préciser les hypothèses.</div></div>`;
   }
 
-  // irritabilité
   if(any('painNow')||any('settle')||any('limitation')){
-    html += `<div class="block"><div class="bt">Irritabilité</div><div class="irr">
-      <div class="lvl low ${irr==='low'?'on':''}">Faible</div>
-      <div class="lvl mod ${irr==='mod'?'on':''}">Modérée</div>
-      <div class="lvl high ${irr==='high'?'on':''}">Élevée</div></div></div>`;
+    html+=`<div class="block"><div class="bt">Irritabilité</div><div class="irr">
+      <div class="lvl low ${irr==='low'?'on':''}">Faible</div><div class="lvl mod ${irr==='mod'?'on':''}">Modérée</div><div class="lvl high ${irr==='high'?'on':''}">Élevée</div></div></div>`;
   }
 
-  // drapeaux jaunes
-  if(yellow.length){
-    html += `<div class="block"><div class="bt">Drapeaux jaunes (psychosocial)</div>`
-      + yellow.map(y=>`<div class="yellow">• ${y}</div>`).join("") + `</div>`;
-  }
+  if(yellow.length) html+=`<div class="block"><div class="bt">Drapeaux jaunes (psychosocial)</div>`+yellow.map(y=>`<div class="yellow">• ${y}</div>`).join("")+`</div>`;
 
-  // conduite à tenir
-  if(advice){
-    html += `<div class="block"><div class="bt">Pistes de prise en charge</div><div class="advice">${advice}</div></div>`;
-  }
+  const advice=buildAdvice(rf, hyps[0]?hyps[0].tissue:null, irr);
+  if(advice) html+=`<div class="block"><div class="bt">Pistes de prise en charge</div><div class="advice">${advice}</div></div>`;
 
-  html += `<div class="disclaimer">⚕️ Outil d'aide au raisonnement clinique fondé sur les modèles actuels (classification du mécanisme de la douleur, raisonnement tissulaire, concept d'irritabilité de Maitland, drapeaux rouges/jaunes). Il ne pose pas de diagnostic et ne remplace pas l'examen d'un professionnel de santé.</div>`;
+  html+=`<div class="disclaimer">⚕️ Aide au raisonnement clinique fondée sur les modèles actuels : drapeaux rouges/jaunes, classification du mécanisme de la douleur, raisonnement diagnostique régional et concept d'irritabilité (Maitland). Ne pose pas de diagnostic et ne remplace pas l'examen d'un professionnel de santé.</div>`;
 
-  out.innerHTML = html;
+  out.innerHTML=html;
 }
 
-function buildAdvice(rf, hyps, irr, topMech){
-  if(rf.length){
-    return `Avant toute reprise : <b>orientation vers un médecin</b> pour écarter une cause sérieuse. La suite du suivi (charge, exercices) sera adaptée selon son avis.`;
-  }
-  if(!hyps.length) return "";
-  const top = hyps[0].name;
-  let lines = [];
-  const irrTxt = irr==='high' ? "Irritabilité élevée : privilégier la <b>réduction de charge relative</b> et des exercices isométriques / indolores ; ne pas rechercher la douleur."
+const TISSUE_ADVICE={
+  tendon:["Gestion progressive de la charge (mise en charge croissante).","Renforcement lourd-lent / isométrique en phase douloureuse.","Éviter le repos complet : le tendon a besoin de charge adaptée."],
+  muscle:["Protection initiale puis remise en charge précoce et progressive.","Réintroduction graduelle de l'étirement puis du travail excentrique.","Critères de reprise sur la force et le geste, pas seulement la douleur."],
+  bone:["Décharge relative des impacts, maintien d'une activité indolore.","Avis médical / imagerie si point osseux focal ou douleur nocturne.","Vérifier le pic de charge et la disponibilité énergétique (RED-S)."],
+  joint:["Récupération des amplitudes et du contrôle moteur.","Avis médical si blocage vrai, instabilité ou épanchement important.","Réathlétisation progressive selon la tolérance."],
+  nerve:["Examen neurologique et tests neurodynamiques.","Avis médical si déficit moteur/sensitif installé ou progressif.","Gérer les positions provocatrices, mobilisations neurales."],
+  central:["Approche bio-psycho-sociale et éducation à la douleur.","Exercice progressif non menaçant, sommeil et gestion du stress.","Éviter la focalisation purement structurelle."],
+  flag:["Signe nécessitant un avis médical / imagerie avant de poursuivre la charge.","Ne pas forcer tant que la cause sérieuse n'est pas écartée."]
+};
+function buildAdvice(rf, tissue, irr){
+  if(rf.length) return `Avant toute reprise : <b>orientation vers un médecin</b> pour écarter une cause sérieuse. La charge et les exercices seront adaptés selon son avis.`;
+  if(!tissue) return "";
+  let irrTxt = irr==='high' ? "Irritabilité élevée : privilégier la <b>réduction de charge relative</b> et des exercices isométriques / indolores ; ne pas rechercher la douleur."
             : irr==='mod' ? "Irritabilité modérée : <b>adapter la charge</b> (douleur acceptable ≤ 3/10 qui se calme rapidement)."
-            : "Irritabilité faible : <b>charge progressive tolérée</b>, on peut solliciter davantage en surveillant la réponse à 24 h.";
-
-  if(top.startsWith('Tendinopathie')) lines=["Gestion progressive de la charge (modèle de mise en charge croissante).","Exercices de renforcement lents et lourds / isométriques en phase irritable.","Éviter l'arrêt total : le tendon a besoin de charge adaptée."];
-  else if(top.startsWith('Lésion musculaire')) lines=["Phase initiale : protection, charge optimale précoce et progressive.","Réintroduction graduelle de l'étirement puis du travail excentrique.","Critères de reprise sur la force et le geste sportif, pas seulement la douleur."];
-  else if(top.startsWith('Contrainte osseuse')) lines=["Suspicion de contrainte osseuse : <b>avis médical / imagerie</b> conseillé.","Décharge relative des impacts, maintien d'une activité sans douleur.","Vérifier les facteurs de risque (pic de charge, disponibilité énergétique / RED-S)."];
-  else if(top.startsWith('Atteinte articulaire')) lines=["Évaluer stabilité, épanchement et mécanique articulaire.","Avis médical si blocage vrai, instabilité ou épanchement important.","Récupération des amplitudes et du contrôle moteur."];
-  else if(top.startsWith('Douleur neurogène')) lines=["Composante neurogène : tests neurodynamiques et examen neurologique.","Avis médical si déficit moteur/sensitif installé ou progressif.","Mobilisations neurales et gestion des positions provocatrices."];
-  else if(top.startsWith('Sensibilisation')) lines=["Profil de sensibilisation : approche <b>bio-psycho-sociale</b>.","Éducation à la douleur, exercice progressif non menaçant, sommeil et stress.","Éviter la focalisation purement structurelle."];
-
-  return irrTxt + `<ul>` + lines.map(l=>`<li>${l}</li>`).join("") + `</ul>`;
+            : "Irritabilité faible : <b>charge progressive tolérée</b>, surveiller la réponse à 24 h.";
+  const lines=TISSUE_ADVICE[tissue]||[];
+  return irrTxt+`<ul>`+lines.map(l=>`<li>${l}</li>`).join("")+`</ul>`;
 }
 
 /* =========================================================================
-   ACTIONS
+   9. ACTIONS
    ========================================================================= */
-document.getElementById('reset').addEventListener('click', ()=>{
-  if(confirm("Effacer toutes les réponses ?")){
-    state={}; stepIndex=0; saveState(); render();
-  }
-});
-document.getElementById('prev').addEventListener('click', ()=>goStep(-1));
-document.getElementById('next').addEventListener('click', ()=>goStep(1));
+document.getElementById('reset').addEventListener('click',()=>{ if(confirm("Effacer toutes les réponses ?")){ state={}; stepIndex=0; saveState(); render(); }});
+document.getElementById('prev').addEventListener('click',()=>goStep(-1));
+document.getElementById('next').addEventListener('click',()=>goStep(1));
 
 render();
 </script>
