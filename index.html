@@ -502,7 +502,9 @@ function selectedRegionLabel(){
 function selectedRegionMarkup(){
   if(!state.region) return `<span style="color:var(--muted)">Aucune zone sélectionnée — cliquez sur le mannequin.</span>`;
   const side = state.regionSide && SIDE_LABELS[state.regionSide] ? `<span class="side-chip">${SIDE_LABELS[state.regionSide]}</span>` : "";
-  return `Zone sélectionnée : <b>${selectedRegionLabel()}</b>${side}`;
+  const main = state.regionDetail ? state.regionDetail : selectedRegionLabel();
+  const sub = state.regionDetail ? ` <span style="color:var(--muted);font-weight:400">(${selectedRegionLabel()})</span>` : "";
+  return `Zone sélectionnée : <b>${main}</b>${side}${sub}`;
 }
 
 function regionChoiceButtons(){
@@ -518,10 +520,14 @@ function updateBodyMapSelection(){
   form.querySelectorAll('.region-choice').forEach(el=>el.classList.toggle('on', el.dataset.region===state.region));
 }
 
-function setPainRegion(region, side){
+function setPainRegion(region, side, zoneId, detail){
   state.region = region;
   if(side) state.regionSide = side;
   else delete state.regionSide;
+  if(zoneId) state.regionZone = zoneId;
+  else delete state.regionZone;
+  if(detail) state.regionDetail = detail;
+  else delete state.regionDetail;
   saveState();
 
   if(orderedSections()[stepIndex] === "Zone douloureuse"){
@@ -536,7 +542,7 @@ function setPainRegion(region, side){
 }
 
 window.selectPainRegion = setPainRegion;
-window.getPainSelection = () => ({region:state.region, side:state.regionSide});
+window.getPainSelection = () => ({region:state.region, side:state.regionSide, zoneId:state.regionZone});
 
 /* =========================================================================
    5. QUESTIONS ACTIVES (tronc commun + région sélectionnée)
@@ -910,33 +916,85 @@ const LOAD_FBX = !new URLSearchParams(window.location.search).has("noFbx");
 let painModelApp = null;
 
 const zoneDefs = [
-  {region:"neck", shape:"sphere", pos:[0,2.33,0], radius:.32},
-  {region:"shoulder", side:"left", shape:"sphere", pos:[-.58,2.02,.02], radius:.28},
-  {region:"shoulder", side:"right", shape:"sphere", pos:[.58,2.02,.02], radius:.28},
-  {region:"arm", side:"left", shape:"cylinder", pos:[-.9,1.38,0], radius:.16, height:.78},
-  {region:"arm", side:"right", shape:"cylinder", pos:[.9,1.38,0], radius:.16, height:.78},
-  {region:"elbow", side:"left", shape:"sphere", pos:[-1.02,.87,0], radius:.18},
-  {region:"elbow", side:"right", shape:"sphere", pos:[1.02,.87,0], radius:.18},
-  {region:"wrist_hand", side:"left", shape:"cylinder", pos:[-1.05,.27,0], radius:.15, height:.72},
-  {region:"wrist_hand", side:"right", shape:"cylinder", pos:[1.05,.27,0], radius:.15, height:.72},
-  {region:"thoracic", shape:"box", pos:[0,1.47,.05], size:[.92,.72,.56]},
-  {region:"abdomen", shape:"box", pos:[0,.78,.22], size:[.72,.56,.34]},
-  {region:"lumbar", shape:"box", pos:[0,.68,-.24], size:[.76,.66,.34]},
-  {region:"hip_groin", shape:"box", pos:[0,.1,0], size:[.92,.52,.58]},
-  {region:"thigh_ant", side:"left", shape:"cylinder", pos:[-.31,-.72,.2], radius:.2, height:1.05},
-  {region:"thigh_ant", side:"right", shape:"cylinder", pos:[.31,-.72,.2], radius:.2, height:1.05},
-  {region:"thigh_post", side:"left", shape:"cylinder", pos:[-.31,-.72,-.2], radius:.2, height:1.05},
-  {region:"thigh_post", side:"right", shape:"cylinder", pos:[.31,-.72,-.2], radius:.2, height:1.05},
-  {region:"knee", side:"left", shape:"sphere", pos:[-.31,-1.44,0], radius:.21},
-  {region:"knee", side:"right", shape:"sphere", pos:[.31,-1.44,0], radius:.21},
-  {region:"leg_ant", side:"left", shape:"cylinder", pos:[-.29,-2.03,.18], radius:.16, height:.86},
-  {region:"leg_ant", side:"right", shape:"cylinder", pos:[.29,-2.03,.18], radius:.16, height:.86},
-  {region:"leg_post", side:"left", shape:"cylinder", pos:[-.29,-2.03,-.18], radius:.16, height:.86},
-  {region:"leg_post", side:"right", shape:"cylinder", pos:[.29,-2.03,-.18], radius:.16, height:.86},
-  {region:"ankle", side:"left", shape:"sphere", pos:[-.27,-2.55,0], radius:.16},
-  {region:"ankle", side:"right", shape:"sphere", pos:[.27,-2.55,0], radius:.16},
-  {region:"foot", side:"left", shape:"box", pos:[-.29,-2.77,.24], size:[.34,.17,.58]},
-  {region:"foot", side:"right", shape:"box", pos:[.29,-2.77,.24], size:[.34,.17,.58]}
+  // tête / cou / trapèzes
+  {id:"neck", label:"Cou", region:"neck", shape:"sphere", pos:[0,2.33,.02], radius:.3},
+  {id:"trap_l", label:"Trapèze", region:"neck", side:"left", shape:"box", pos:[-.26,2.0,-.14], size:[.42,.34,.34]},
+  {id:"trap_r", label:"Trapèze", region:"neck", side:"right", shape:"box", pos:[.26,2.0,-.14], size:[.42,.34,.34]},
+  // épaules
+  {id:"deltoid_l", label:"Deltoïde", region:"shoulder", side:"left", shape:"sphere", pos:[-.56,1.82,.02], radius:.27},
+  {id:"deltoid_r", label:"Deltoïde", region:"shoulder", side:"right", shape:"sphere", pos:[.56,1.82,.02], radius:.27},
+  // bras (biceps / triceps) — bras tombants en diagonale (calibré sur le maillage)
+  {id:"biceps_l", label:"Biceps", region:"arm", side:"left", shape:"sphere", pos:[-.8,1.3,.1], radius:.19},
+  {id:"biceps_r", label:"Biceps", region:"arm", side:"right", shape:"sphere", pos:[.8,1.3,.1], radius:.19},
+  {id:"triceps_l", label:"Triceps", region:"arm", side:"left", shape:"sphere", pos:[-.8,1.3,-.12], radius:.19},
+  {id:"triceps_r", label:"Triceps", region:"arm", side:"right", shape:"sphere", pos:[.8,1.3,-.12], radius:.19},
+  // coudes
+  {id:"elbow_l", label:"Coude", region:"elbow", side:"left", shape:"sphere", pos:[-.98,.78,0], radius:.18},
+  {id:"elbow_r", label:"Coude", region:"elbow", side:"right", shape:"sphere", pos:[.98,.78,0], radius:.18},
+  // avant-bras / poignet / main / doigts
+  {id:"forearm_l", label:"Avant-bras", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.05,.42,0], radius:.17},
+  {id:"forearm_r", label:"Avant-bras", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.05,.42,0], radius:.17},
+  {id:"wrist_l", label:"Poignet", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.08,.1,0], radius:.14},
+  {id:"wrist_r", label:"Poignet", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.08,.1,0], radius:.14},
+  {id:"hand_l", label:"Main", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.08,-.16,.02], radius:.17},
+  {id:"hand_r", label:"Main", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.08,-.16,.02], radius:.17},
+  {id:"fingers_l", label:"Doigts", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.08,-.34,.02], radius:.16},
+  {id:"fingers_r", label:"Doigts", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.08,-.34,.02], radius:.16},
+  // thorax / pectoraux / haut du dos
+  {id:"pec_l", label:"Pectoral", region:"thoracic", side:"left", shape:"box", pos:[-.24,1.55,.22], size:[.36,.42,.22]},
+  {id:"pec_r", label:"Pectoral", region:"thoracic", side:"right", shape:"box", pos:[.24,1.55,.22], size:[.36,.42,.22]},
+  {id:"sternum", label:"Sternum / côtes", region:"thoracic", shape:"box", pos:[0,1.45,.28], size:[.22,.52,.16]},
+  {id:"upperback", label:"Haut du dos", region:"thoracic", shape:"box", pos:[0,1.5,-.22], size:[.74,.56,.22]},
+  // abdomen
+  {id:"rectus", label:"Abdominaux", region:"abdomen", shape:"box", pos:[0,.82,.26], size:[.34,.6,.18]},
+  {id:"oblique_l", label:"Oblique", region:"abdomen", side:"left", shape:"box", pos:[-.27,.8,.2], size:[.22,.5,.22]},
+  {id:"oblique_r", label:"Oblique", region:"abdomen", side:"right", shape:"box", pos:[.27,.8,.2], size:[.22,.5,.22]},
+  // bas du dos / sacrum
+  {id:"lumbar", label:"Lombaires", region:"lumbar", shape:"box", pos:[0,.7,-.24], size:[.54,.5,.26]},
+  {id:"sacrum", label:"Sacrum", region:"lumbar", shape:"box", pos:[0,.32,-.22], size:[.34,.34,.22]},
+  // bassin / hanche / fessier / aine
+  {id:"glute_l", label:"Fessier", region:"hip_groin", side:"left", shape:"sphere", pos:[-.24,.2,-.2], radius:.26},
+  {id:"glute_r", label:"Fessier", region:"hip_groin", side:"right", shape:"sphere", pos:[.24,.2,-.2], radius:.26},
+  {id:"hip_l", label:"Hanche", region:"hip_groin", side:"left", shape:"sphere", pos:[-.42,.3,.04], radius:.2},
+  {id:"hip_r", label:"Hanche", region:"hip_groin", side:"right", shape:"sphere", pos:[.42,.3,.04], radius:.2},
+  {id:"groin", label:"Aine / pubis", region:"hip_groin", shape:"box", pos:[0,-.02,.18], size:[.42,.32,.22]},
+  // cuisses
+  {id:"quad_l", label:"Quadriceps", region:"thigh_ant", side:"left", shape:"cylinder", pos:[-.31,-.7,.16], radius:.18, height:1.0},
+  {id:"quad_r", label:"Quadriceps", region:"thigh_ant", side:"right", shape:"cylinder", pos:[.31,-.7,.16], radius:.18, height:1.0},
+  {id:"adductor_l", label:"Adducteurs", region:"hip_groin", side:"left", shape:"cylinder", pos:[-.16,-.55,.06], radius:.12, height:.8},
+  {id:"adductor_r", label:"Adducteurs", region:"hip_groin", side:"right", shape:"cylinder", pos:[.16,-.55,.06], radius:.12, height:.8},
+  {id:"ham_l", label:"Ischio-jambiers", region:"thigh_post", side:"left", shape:"cylinder", pos:[-.31,-.7,-.2], radius:.18, height:1.0},
+  {id:"ham_r", label:"Ischio-jambiers", region:"thigh_post", side:"right", shape:"cylinder", pos:[.31,-.7,-.2], radius:.18, height:1.0},
+  // genoux
+  {id:"knee_l", label:"Genou", region:"knee", side:"left", shape:"sphere", pos:[-.31,-1.44,.04], radius:.2},
+  {id:"knee_r", label:"Genou", region:"knee", side:"right", shape:"sphere", pos:[.31,-1.44,.04], radius:.2},
+  // jambes (tibia / mollet)
+  {id:"tibia_l", label:"Tibia", region:"leg_ant", side:"left", shape:"cylinder", pos:[-.29,-2.03,-.04], radius:.14, height:.86},
+  {id:"tibia_r", label:"Tibia", region:"leg_ant", side:"right", shape:"cylinder", pos:[.29,-2.03,-.04], radius:.14, height:.86},
+  {id:"calf_l", label:"Mollet", region:"leg_post", side:"left", shape:"cylinder", pos:[-.29,-1.95,-.26], radius:.15, height:.82},
+  {id:"calf_r", label:"Mollet", region:"leg_post", side:"right", shape:"cylinder", pos:[.29,-1.95,-.26], radius:.15, height:.82},
+  // chevilles
+  {id:"ankle_l", label:"Cheville", region:"ankle", side:"left", shape:"sphere", pos:[-.27,-2.55,0], radius:.16},
+  {id:"ankle_r", label:"Cheville", region:"ankle", side:"right", shape:"sphere", pos:[.27,-2.55,0], radius:.16},
+  // pieds / orteils
+  {id:"foot_l", label:"Pied", region:"foot", side:"left", shape:"box", pos:[-.29,-2.77,.18], size:[.34,.17,.42]},
+  {id:"foot_r", label:"Pied", region:"foot", side:"right", shape:"box", pos:[.29,-2.77,.18], size:[.34,.17,.42]},
+  {id:"toes_l", label:"Orteils", region:"foot", side:"left", shape:"box", pos:[-.29,-2.76,.3], size:[.32,.16,.22]},
+  {id:"toes_r", label:"Orteils", region:"foot", side:"right", shape:"box", pos:[.29,-2.76,.3], size:[.32,.16,.22]},
+  // détails supplémentaires
+  {id:"nape", label:"Nuque", region:"neck", shape:"sphere", pos:[0,2.05,-.16], radius:.16},
+  {id:"clavicle_l", label:"Clavicule", region:"thoracic", side:"left", shape:"sphere", pos:[-.32,1.66,.22], radius:.14},
+  {id:"clavicle_r", label:"Clavicule", region:"thoracic", side:"right", shape:"sphere", pos:[.32,1.66,.22], radius:.14},
+  {id:"scapula_l", label:"Omoplate", region:"thoracic", side:"left", shape:"sphere", pos:[-.34,1.45,-.24], radius:.16},
+  {id:"scapula_r", label:"Omoplate", region:"thoracic", side:"right", shape:"sphere", pos:[.34,1.45,-.24], radius:.16},
+  {id:"lat_l", label:"Grand dorsal", region:"thoracic", side:"left", shape:"sphere", pos:[-.42,1.1,-.14], radius:.18},
+  {id:"lat_r", label:"Grand dorsal", region:"thoracic", side:"right", shape:"sphere", pos:[.42,1.1,-.14], radius:.18},
+  {id:"patella_l", label:"Rotule", region:"knee", side:"left", shape:"sphere", pos:[-.31,-1.4,.16], radius:.13},
+  {id:"patella_r", label:"Rotule", region:"knee", side:"right", shape:"sphere", pos:[.31,-1.4,.16], radius:.13},
+  {id:"achilles_l", label:"Tendon d'Achille", region:"leg_post", side:"left", shape:"sphere", pos:[-.29,-2.35,-.16], radius:.14},
+  {id:"achilles_r", label:"Tendon d'Achille", region:"leg_post", side:"right", shape:"sphere", pos:[.29,-2.35,-.16], radius:.14},
+  {id:"heel_l", label:"Talon", region:"foot", side:"left", shape:"box", pos:[-.29,-2.72,-.12], size:[.3,.2,.22]},
+  {id:"heel_r", label:"Talon", region:"foot", side:"right", shape:"box", pos:[.29,-2.72,-.12], size:[.3,.2,.22]}
 ];
 
 function makeZoneGeometry(def){
@@ -946,7 +1004,7 @@ function makeZoneGeometry(def){
 }
 
 function zoneLabel(def){
-  const base = window.getPainRegionLabel ? window.getPainRegionLabel(def.region) : def.region;
+  const base = def.label || (window.getPainRegionLabel ? window.getPainRegionLabel(def.region) : def.region);
   const side = def.side === "left" ? " gauche" : def.side === "right" ? " droite" : "";
   return `${base}${side}`;
 }
@@ -1095,17 +1153,13 @@ function createPainModelApp(){
   floor.position.y = -2.84;
   scene.add(floor);
 
+  // Primitives invisibles (colorWrite désactivé) : servent UNIQUEMENT au raycast (survol/clic).
+  // La surbrillance visible est peinte sur les sommets du modèle → elle épouse la surface.
   const hitZones = zoneDefs.map(def=>{
-    const material = new THREE.MeshBasicMaterial({
-      color:0x0891b2,
-      transparent:true,
-      opacity:0,
-      depthWrite:false
-    });
+    const material = new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:false});
     const mesh = new THREE.Mesh(makeZoneGeometry(def), material);
     mesh.position.set(def.pos[0], def.pos[1], def.pos[2]);
     mesh.userData = def;
-    mesh.renderOrder = 4;
     scene.add(mesh);
     return mesh;
   });
@@ -1137,20 +1191,35 @@ function createPainModelApp(){
     camera.updateProjectionMatrix();
   }
 
-  function selectionMatches(def, selection){
-    if(!selection || selection.region !== def.region) return false;
-    if(selection.side && def.side && selection.side !== def.side) return false;
+  function zoneActive(def, sel){
+    if(!sel || !sel.region) return false;
+    if(sel.zoneId) return def.id === sel.zoneId;
+    if(def.region !== sel.region) return false;
+    if(sel.side && def.side && sel.side !== def.side) return false;
     return true;
   }
-
-  function paintZones(){
-    const selection = window.getPainSelection ? window.getPainSelection() : {};
-    hitZones.forEach(mesh=>{
-      const selected = selectionMatches(mesh.userData, selection);
-      const isHovered = mesh === hovered;
-      mesh.material.opacity = selected ? .46 : isHovered ? .26 : .02;
-      mesh.material.color.set(selected ? 0x0891b2 : 0x22d3ee);
-      mesh.material.needsUpdate = true;
+  const HI = new THREE.Color(0x0891b2);
+  // Zone la plus proche d'un point (même métrique que l'affectation des sommets).
+  function nearestZoneDef(p){
+    let best=null, bd=Infinity;
+    for(let k=0;k<zoneDefs.length;k++){ const c=zoneDefs[k].pos; const dx=p.x-c[0], dy=p.y-c[1], dz=p.z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=zoneDefs[k]; } }
+    return best;
+  }
+  // Surbrillance : chaque sommet appartient à sa zone la plus proche (Voronoï) → toute la surface est couverte.
+  function paintModelSurface(){
+    const targets = painModelApp && painModelApp.paintTargets;
+    if(!targets || !targets.length) return;
+    const sel = window.getPainSelection ? window.getPainSelection() : {};
+    const active = new Set();
+    zoneDefs.forEach((d,idx)=>{ if(zoneActive(d, sel)) active.add(idx); });
+    targets.forEach(t=>{
+      t.colors.set(t.base);
+      if(active.size && t.zoneIdx){
+        const zi=t.zoneIdx, col=t.colors;
+        for(let i=0;i<t.n;i++){ if(active.has(zi[i])){ col[i*3]=HI.r; col[i*3+1]=HI.g; col[i*3+2]=HI.b; } }
+      }
+      t.attr.array.set(t.colors);
+      t.attr.needsUpdate = true;
     });
   }
 
@@ -1165,6 +1234,15 @@ function createPainModelApp(){
     raycaster.setFromCamera(pointer, camera);
     return raycaster.intersectObjects(hitZones, false)[0]?.object || null;
   }
+  // Raycast sur la vraie surface du modèle → point d'impact (toute la surface est cliquable).
+  function pickSurface(event){
+    const targets = painModelApp && painModelApp.paintTargets;
+    if(!targets || !targets.length) return null;
+    updatePointer(event);
+    raycaster.setFromCamera(pointer, camera);
+    const hit = raycaster.intersectObjects(targets.map(t=>t.mesh), true)[0];
+    return hit ? hit.point : null;
+  }
 
   function setHovered(mesh){
     if(hovered === mesh) return;
@@ -1173,10 +1251,11 @@ function createPainModelApp(){
     if(mesh){
       hoverLabel.textContent = zoneLabel(mesh.userData);
       hoverLabel.classList.add("on");
+      canvas.style.cursor = "pointer";
     } else {
       hoverLabel.classList.remove("on");
+      canvas.style.cursor = "grab";
     }
-    paintZones();
   }
 
   function setView(name){
@@ -1202,8 +1281,11 @@ function createPainModelApp(){
     const dy = event.clientY - startPoint.y;
     startPoint = null;
     if(Math.hypot(dx, dy) > 6) return;
-    const mesh = pick(event);
-    if(mesh && window.selectPainRegion) window.selectPainRegion(mesh.userData.region, mesh.userData.side || null);
+    let def = null;
+    const pt = pickSurface(event);
+    if(pt) def = nearestZoneDef(pt);
+    if(!def){ const mesh = pick(event); if(mesh) def = mesh.userData; }
+    if(def && window.selectPainRegion) window.selectPainRegion(def.region, def.side || null, def.id, zoneLabel(def));
   });
 
   mount.querySelectorAll("[data-view]").forEach(btn=>{
@@ -1226,24 +1308,40 @@ function createPainModelApp(){
         }
         scene.remove(fallbackModel);
         disposeObject(fallbackModel);
+        const meshes = [];
         object.traverse(child=>{
           if(!child.isMesh) return;
           if(child.geometry && !child.geometry.attributes.normal) child.geometry.computeVertexNormals();
           child.castShadow = true;
           child.receiveShadow = true;
           child.material = new THREE.MeshStandardMaterial({
-            color:0x8fa5ad,
-            roughness:.58,
-            metalness:.01,
-            side:THREE.DoubleSide,
-            emissive:0x17323a,
-            emissiveIntensity:.025
+            color:0xffffff, vertexColors:true,
+            roughness:.62, metalness:.01, side:THREE.DoubleSide,
+            emissive:0x0e2a31, emissiveIntensity:.02
           });
+          meshes.push(child);
         });
         normalizeModel(object);
         scene.add(object);
+        object.updateMatrixWorld(true);
+        // pré-calcul des positions monde + couleur de base, pour peindre la surface
+        const baseCol = new THREE.Color(0x9aa1a5);
+        const ZC = zoneDefs.map(d=>d.pos);
+        painModelApp.paintTargets = meshes.map(m=>{
+          const geo = m.geometry, posAttr = geo.attributes.position, n = posAttr.count;
+          const wp = new Float32Array(n*3), v = new THREE.Vector3();
+          for(let i=0;i<n;i++){ v.fromBufferAttribute(posAttr,i).applyMatrix4(m.matrixWorld); wp[i*3]=v.x; wp[i*3+1]=v.y; wp[i*3+2]=v.z; }
+          // affectation de chaque sommet à la zone la plus proche (Voronoï)
+          const zoneIdx = new Uint8Array(n);
+          for(let i=0;i<n;i++){ const x=wp[i*3], y=wp[i*3+1], z=wp[i*3+2]; let best=0, bd=Infinity; for(let k=0;k<ZC.length;k++){ const c=ZC[k]; const dx=x-c[0], dy=y-c[1], dz=z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=k; } } zoneIdx[i]=best; }
+          const base = new Float32Array(n*3);
+          for(let i=0;i<n;i++){ base[i*3]=baseCol.r; base[i*3+1]=baseCol.g; base[i*3+2]=baseCol.b; }
+          const colors = base.slice();
+          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+          return {mesh:m, wp, zoneIdx, base, colors, n, attr:geo.attributes.color};
+        });
         setStatus("", true);
-        paintZones();
+        paintModelSurface();
       },
       event=>{
         if(painModelApp !== appRef) return;
@@ -1265,7 +1363,7 @@ function createPainModelApp(){
   }
   animate();
 
-  window.syncPainModelSelection = paintZones;
+  window.syncPainModelSelection = paintModelSurface;
 }
 
 window.initPainModel3D = createPainModelApp;
@@ -1277,14 +1375,7 @@ window.destroyPainModel3D = function(){
   painModelApp.renderer.dispose();
   painModelApp = null;
 };
-window.syncPainModelSelection = function(){
-  if(!painModelApp) return;
-  painModelApp.hitZones.forEach(mesh=>{
-    const selection = window.getPainSelection ? window.getPainSelection() : {};
-    const selected = selection.region === mesh.userData.region && (!selection.side || !mesh.userData.side || selection.side === mesh.userData.side);
-    mesh.material.opacity = selected ? .34 : mesh === painModelApp.hovered ? .2 : .012;
-  });
-};
+window.syncPainModelSelection = function(){ /* remplacé par paintModelSurface après l'initialisation du modèle */ };
 
 if(document.getElementById("painModel3d")) createPainModelApp();
 </script>
