@@ -11,7 +11,7 @@
     --text:#0f2c36;--muted:#5b7886;
     --primary:#0891b2;--primary-dark:#0e7490;--primary-soft:#cffafe;--secondary:#22d3ee;--accent:#059669;
     --danger:#dc2626;--danger-soft:#fde8e8;--warn:#b45309;--warn-soft:#fef3c7;--ok:#059669;
-    --body-fill:#bcd6de;--body-stroke:#8fb5c0;
+    --body-fill:#a8acaf;--body-stroke:#6c7176;
     --radius:16px;--shadow:0 12px 34px rgba(13,60,72,.10);font-synthesis:none;
   }
   *{box-sizing:border-box}
@@ -73,7 +73,7 @@
   @media(max-width:920px){.bm-fig svg{height:250px;max-width:45vw}}
   .bm-fig figcaption{font-size:11px;color:var(--muted);margin-top:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em}
   .silhouette{fill:var(--body-fill);stroke:var(--body-stroke);stroke-width:1.6;stroke-linejoin:round;pointer-events:none}
-  .muscle{fill:none;stroke:#7ba3b0;stroke-width:1.1;opacity:.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+  .divider{fill:none;stroke:#4f5559;stroke-width:1.2;stroke-dasharray:3 3;opacity:.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
   .zone{fill:transparent;stroke:transparent;stroke-width:1.6;cursor:pointer;transition:fill .18s ease,stroke .18s ease}
   .zone:hover{fill:rgba(8,145,178,.32)}
   .zone.sel{fill:rgba(8,145,178,.70);stroke:var(--primary-dark)}
@@ -488,10 +488,11 @@ const IC = {
 const OUTLINE = `<path class="silhouette" d="M120,16 C134,16 143,29 143,46 C143,58 139,67 132,72 C152,75 172,84 182,103 C187,116 184,131 178,141 C173,156 169,175 165,189 C161,202 153,210 151,218 C153,230 162,242 170,254 C172,304 164,362 158,414 C156,470 151,520 143,560 C142,569 143,577 147,583 C155,585 165,586 165,591 C165,597 151,597 142,597 C131,597 127,593 126,585 C125,540 128,460 127,418 C126,360 121,300 120,273 C119,300 114,360 113,418 C112,460 115,540 114,585 C113,593 109,597 98,597 C89,597 75,597 75,591 C75,586 85,585 93,583 C97,577 98,569 97,560 C89,520 84,470 82,414 C76,362 68,304 70,254 C78,242 87,230 89,218 C87,210 79,202 75,189 C71,175 67,156 62,141 C56,131 53,116 58,103 C68,84 88,75 108,72 C101,67 97,58 97,46 C97,29 106,16 120,16 Z"/>`;
 const ARMS = `<path class="silhouette" d="M182,105 C194,114 198,131 195,154 C192,184 187,214 181,243 C185,249 183,272 176,278 C170,282 164,278 165,272 C167,238 171,208 169,158 C168,134 175,117 177,107 C178,104 180,104 182,105 Z"/>
   <path class="silhouette" d="M58,105 C46,114 42,131 45,154 C48,184 53,214 59,243 C55,249 57,272 64,278 C70,282 76,278 75,272 C73,238 69,208 71,158 C72,134 65,117 63,107 C62,104 60,104 58,105 Z"/>`;
-const MUSC_FRONT = `<path class="muscle" d="M101,82 C111,89 129,89 139,82 M120,86 L120,150 M119,118 C107,129 95,128 86,118 M121,118 C133,129 145,128 154,118 M120,150 L120,205 M105,165 L135,165 M105,180 L135,180 M107,194 L133,194 M151,150 C150,178 143,197 133,207 M89,150 C90,178 97,197 107,207 M154,100 C166,106 172,120 170,135 M86,100 C74,106 68,120 70,135 M170,132 C178,154 177,182 171,206 M70,132 C62,154 63,182 69,206 M180,212 C177,234 175,252 172,268 M60,212 C63,234 65,252 68,268 M151,258 C161,302 158,362 154,406 M141,262 C146,316 145,368 143,406 M127,260 C133,312 134,366 132,406 M89,258 C79,302 82,362 86,406 M99,262 C94,316 95,368 97,406 M113,260 C107,312 106,366 108,406 M134,410 C140,416 146,416 150,411 M90,410 C96,416 102,416 106,411 M139,432 C145,470 144,510 141,545 M101,432 C95,470 96,510 99,545"/>`;
-const MUSC_BACK = `<path class="muscle" d="M120,80 L120,250 M104,78 C112,92 120,96 120,110 M136,78 C128,92 120,96 120,110 M150,102 C157,114 155,128 147,134 M90,102 C83,114 85,128 93,134 M162,140 C152,170 140,196 124,206 M78,140 C88,170 100,196 116,206 M112,150 L112,242 M128,150 L128,242 M172,132 C178,156 176,186 170,208 M68,132 C62,156 64,186 70,208 M120,212 C108,216 97,224 91,238 M120,212 C132,216 143,224 149,238 M92,240 C104,252 136,252 148,240 M151,260 C159,312 157,366 153,406 M141,264 C146,316 145,368 143,406 M127,262 C133,314 134,368 132,406 M89,260 C81,312 83,366 87,406 M99,264 C94,316 95,368 97,406 M113,262 C107,314 106,368 108,406 M150,448 C153,474 151,500 146,522 M90,448 C87,474 89,500 94,522 M141,545 L141,562 M99,545 L99,562"/>`;
-const BODY_FRONT = OUTLINE + ARMS + MUSC_FRONT;
-const BODY_BACK = OUTLINE + ARMS + MUSC_BACK;
+const HANDS = `<rect class="silhouette" x="168" y="280" width="22" height="24" rx="9"/><ellipse class="silhouette" cx="165" cy="290" rx="4.5" ry="7.5"/><rect class="silhouette" x="169" y="302" width="4.4" height="20" rx="2.2"/><rect class="silhouette" x="174.4" y="303" width="4.4" height="21" rx="2.2"/><rect class="silhouette" x="179.8" y="303" width="4.4" height="20" rx="2.2"/><rect class="silhouette" x="185" y="302" width="4.4" height="18" rx="2.2"/><rect class="silhouette" x="50" y="280" width="22" height="24" rx="9"/><ellipse class="silhouette" cx="75" cy="290" rx="4.5" ry="7.5"/><rect class="silhouette" x="66.6" y="302" width="4.4" height="20" rx="2.2"/><rect class="silhouette" x="61.2" y="303" width="4.4" height="21" rx="2.2"/><rect class="silhouette" x="55.8" y="303" width="4.4" height="20" rx="2.2"/><rect class="silhouette" x="50.6" y="302" width="4.4" height="18" rx="2.2"/>`;
+const DIV_FRONT = `<path class="divider" d="M104,70 C112,78 128,78 136,70 M97,74 C86,80 78,92 75,104 M143,74 C154,80 162,92 165,104 M120,84 L120,205 M86,122 C104,134 136,134 154,122 M152,150 C151,178 144,198 134,208 M88,150 C89,178 96,198 106,208 M90,210 C105,220 135,220 150,210 M104,216 L116,240 M136,216 L124,240 M52,262 C58,266 70,266 74,262 M166,262 C172,266 184,266 188,262 M88,556 C92,560 104,560 108,556 M132,556 C136,560 148,560 152,556"/><circle class="divider" cx="120" cy="166" r="4"/><circle class="divider" cx="60" cy="192" r="12"/><circle class="divider" cx="180" cy="192" r="12"/><circle class="divider" cx="98" cy="414" r="16"/><circle class="divider" cx="142" cy="414" r="16"/>`;
+const DIV_BACK = `<path class="divider" d="M104,78 C112,90 128,90 136,78 M120,82 L120,250 M150,104 C156,118 152,134 142,140 M90,104 C84,118 88,134 98,140 M156,150 C150,176 140,198 126,208 M84,150 C90,176 100,198 114,208 M96,200 C108,208 132,208 144,200 M120,212 C110,222 100,232 96,244 M120,212 C130,222 140,232 144,244 M96,244 C108,256 132,256 144,244 M52,262 C58,266 70,266 74,262 M166,262 C172,266 184,266 188,262 M88,556 C92,560 104,560 108,556 M132,556 C136,560 148,560 152,556"/><circle class="divider" cx="120" cy="164" r="5"/><circle class="divider" cx="60" cy="192" r="12"/><circle class="divider" cx="180" cy="192" r="12"/><circle class="divider" cx="98" cy="414" r="16"/><circle class="divider" cx="142" cy="414" r="16"/>`;
+const BODY_FRONT = OUTLINE + ARMS + HANDS + DIV_FRONT;
+const BODY_BACK = OUTLINE + ARMS + HANDS + DIV_BACK;
 
 function svgFront(){
   return `<svg viewBox="0 0 240 600" xmlns="http://www.w3.org/2000/svg">${BODY_FRONT}
