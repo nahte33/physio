@@ -629,7 +629,7 @@ function renderBodyMap(){
           <button type="button" data-view="left">Gauche</button>
           <button type="button" data-view="right">Droite</button>
         </div>
-        <div class="bm-status" id="painModelStatus">Chargement du mannequin 3D...</div>
+        <div class="bm-status" id="painModelStatus">Faites pivoter le mannequin · cliquez une zone</div>
       </div>
       <div>
         <div class="bm-zone-title">Zones rapides</div>
@@ -904,7 +904,9 @@ import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 
 const MODEL_URL = "assets/models/PM3D_Sphere3D_4.fbx";
 const MODEL_HEIGHT = 5.55;
-const FORCE_FALLBACK_MODEL = new URLSearchParams(window.location.search).has("fallback3d");
+// Mannequin humain sculpté (FBX) chargé par défaut ; le mannequin procédural sert de secours
+// le temps du chargement ou en cas d'échec. Ajouter ?noFbx à l'URL pour forcer le procédural.
+const LOAD_FBX = !new URLSearchParams(window.location.search).has("noFbx");
 let painModelApp = null;
 
 const zoneDefs = [
@@ -1003,31 +1005,42 @@ function buildFallbackMannequin(){
     return mesh;
   }
 
-  add(new THREE.SphereGeometry(.24, 32, 22), bodyMat, [0,2.47,0], [0,0,0], [.9,1.18,.82]);
-  add(new THREE.CapsuleGeometry(.12,.22,12,22), shadowMat, [0,2.12,0]);
-  add(new THREE.SphereGeometry(.48, 40, 24), bodyMat, [0,1.58,.02], [0,0,0], [1.42,1.05,.72]);
-  add(new THREE.SphereGeometry(.34, 36, 20), bodyMat, [0,.9,.08], [0,0,0], [1.08,1.38,.62]);
-  add(new THREE.SphereGeometry(.36, 36, 20), shadowMat, [0,.18,0], [0,0,0], [1.55,.72,.76]);
+  // tête + cou
+  add(new THREE.SphereGeometry(.27, 36, 26), bodyMat, [0,2.46,0], [0,0,0], [.92,1.12,.96]);
+  add(new THREE.CylinderGeometry(.13,.17,.32,22), bodyMat, [0,2.14,0]);
+  // trapèzes (joug d'épaules)
+  add(new THREE.CapsuleGeometry(.15,.46,10,20), bodyMat, [0,1.98,-.02], [0,0,Math.PI/2], [1,1,.82]);
+  // thorax taillé en V (aplati avant/arrière), abdomen, bassin
+  add(new THREE.CylinderGeometry(.47,.35,.66,30), bodyMat, [0,1.6,0], [0,0,0], [1,1,.6]);
+  add(new THREE.CylinderGeometry(.34,.31,.5,30), bodyMat, [0,1.07,0], [0,0,0], [1,1,.58]);
+  add(new THREE.CylinderGeometry(.32,.43,.5,30), bodyMat, [0,.58,0], [0,0,0], [1.05,1,.66]);
+  add(new THREE.SphereGeometry(.4, 30, 20), bodyMat, [0,.34,-.02], [0,0,0], [1.08,.72,.74]);
 
-  add(new THREE.SphereGeometry(.18, 28, 18), bodyMat, [-.62,1.95,.02], [0,0,0], [1.22,1,.9]);
-  add(new THREE.SphereGeometry(.18, 28, 18), bodyMat, [.62,1.95,.02], [0,0,0], [1.22,1,.9]);
-  add(new THREE.CapsuleGeometry(.13,.72,12,24), bodyMat, [-.82,1.34,0], [0,0,-.22]);
-  add(new THREE.CapsuleGeometry(.13,.72,12,24), bodyMat, [.82,1.34,0], [0,0,.22]);
-  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [-.97,.87,0]);
-  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [.97,.87,0]);
-  add(new THREE.CapsuleGeometry(.11,.68,12,22), bodyMat, [-1.02,.34,0], [0,0,.06]);
-  add(new THREE.CapsuleGeometry(.11,.68,12,22), bodyMat, [1.02,.34,0], [0,0,-.06]);
-  add(new THREE.SphereGeometry(.12, 22, 14), shadowMat, [-1.04,-.12,.02], [0,0,0], [.8,1.18,.62]);
-  add(new THREE.SphereGeometry(.12, 22, 14), shadowMat, [1.04,-.12,.02], [0,0,0], [.8,1.18,.62]);
+  // épaules (deltoïdes) + bras + coudes + avant-bras + mains
+  add(new THREE.SphereGeometry(.2, 28, 20), bodyMat, [-.62,1.92,0], [0,0,0], [1.05,1.02,.96]);
+  add(new THREE.SphereGeometry(.2, 28, 20), bodyMat, [.62,1.92,0], [0,0,0], [1.05,1.02,.96]);
+  add(new THREE.CapsuleGeometry(.125,.6,12,24), bodyMat, [-.74,1.42,0], [0,0,.12]);
+  add(new THREE.CapsuleGeometry(.125,.6,12,24), bodyMat, [.74,1.42,0], [0,0,-.12]);
+  add(new THREE.SphereGeometry(.13, 24, 16), shadowMat, [-.9,.98,0]);
+  add(new THREE.SphereGeometry(.13, 24, 16), shadowMat, [.9,.98,0]);
+  add(new THREE.CapsuleGeometry(.1,.56,12,22), bodyMat, [-.98,.5,0], [0,0,.05]);
+  add(new THREE.CapsuleGeometry(.1,.56,12,22), bodyMat, [.98,.5,0], [0,0,-.05]);
+  add(new THREE.SphereGeometry(.13, 20, 16), bodyMat, [-1.02,.02,.02], [0,0,0], [.72,1.28,.5]);
+  add(new THREE.SphereGeometry(.13, 20, 16), bodyMat, [1.02,.02,.02], [0,0,0], [.72,1.28,.5]);
 
-  add(new THREE.CapsuleGeometry(.17,.92,14,26), bodyMat, [-.31,-.68,0], [0,0,.04]);
-  add(new THREE.CapsuleGeometry(.17,.92,14,26), bodyMat, [.31,-.68,0], [0,0,-.04]);
-  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [-.31,-1.38,.03], [0,0,0], [1,1,.82]);
-  add(new THREE.SphereGeometry(.15, 24, 16), shadowMat, [.31,-1.38,.03], [0,0,0], [1,1,.82]);
-  add(new THREE.CapsuleGeometry(.14,.88,14,24), bodyMat, [-.29,-2.02,0], [0,0,-.04]);
-  add(new THREE.CapsuleGeometry(.14,.88,14,24), bodyMat, [.29,-2.02,0], [0,0,.04]);
-  add(new THREE.BoxGeometry(.28,.16,.52), shadowMat, [-.29,-2.77,.22], [0,0,0], [1,1,1]);
-  add(new THREE.BoxGeometry(.28,.16,.52), shadowMat, [.29,-2.77,.22], [0,0,0], [1,1,1]);
+  // cuisses + genoux + jambes (tibia + galbe du mollet) + chevilles + pieds
+  add(new THREE.CapsuleGeometry(.19,.86,14,26), bodyMat, [-.3,-.6,0], [0,0,.02]);
+  add(new THREE.CapsuleGeometry(.19,.86,14,26), bodyMat, [.3,-.6,0], [0,0,-.02]);
+  add(new THREE.SphereGeometry(.16, 26, 18), shadowMat, [-.31,-1.4,.02], [0,0,0], [1,1,.92]);
+  add(new THREE.SphereGeometry(.16, 26, 18), shadowMat, [.31,-1.4,.02], [0,0,0], [1,1,.92]);
+  add(new THREE.CapsuleGeometry(.145,.82,14,24), bodyMat, [-.3,-2.0,0]);
+  add(new THREE.CapsuleGeometry(.145,.82,14,24), bodyMat, [.3,-2.0,0]);
+  add(new THREE.SphereGeometry(.12, 18, 14), bodyMat, [-.3,-1.8,-.13], [0,0,0], [1,1.45,.8]);
+  add(new THREE.SphereGeometry(.12, 18, 14), bodyMat, [.3,-1.8,-.13], [0,0,0], [1,1.45,.8]);
+  add(new THREE.SphereGeometry(.1, 18, 14), shadowMat, [-.29,-2.55,0]);
+  add(new THREE.SphereGeometry(.1, 18, 14), shadowMat, [.29,-2.55,0]);
+  add(new THREE.BoxGeometry(.26,.15,.5), bodyMat, [-.29,-2.74,.2], [0,0,0], [1,1,1]);
+  add(new THREE.BoxGeometry(.26,.15,.5), bodyMat, [.29,-2.74,.2], [0,0,0], [1,1,1]);
 
   return group;
 }
@@ -1135,7 +1148,7 @@ function createPainModelApp(){
     hitZones.forEach(mesh=>{
       const selected = selectionMatches(mesh.userData, selection);
       const isHovered = mesh === hovered;
-      mesh.material.opacity = selected ? .34 : isHovered ? .2 : .012;
+      mesh.material.opacity = selected ? .46 : isHovered ? .26 : .02;
       mesh.material.color.set(selected ? 0x0891b2 : 0x22d3ee);
       mesh.material.needsUpdate = true;
     });
@@ -1202,7 +1215,7 @@ function createPainModelApp(){
   painModelApp.resizeObserver = resizeObserver;
   syncSize();
 
-  if(!FORCE_FALLBACK_MODEL){
+  if(LOAD_FBX){
     const loader = new FBXLoader();
     loader.load(
       MODEL_URL,
