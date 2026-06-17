@@ -59,6 +59,14 @@
   .scale .opt span{width:40px;text-align:center;padding:9px 0;font-variant-numeric:tabular-nums}
 
   input[type=number],input[type=text]{width:100%;max-width:260px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text)}
+  .select-wrap{position:relative;display:inline-block;max-width:320px;width:100%}
+  .select-wrap select{appearance:none;-webkit-appearance:none;width:100%;padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);cursor:pointer;transition:.15s}
+  .select-wrap select:hover{border-color:var(--primary)}
+  .select-wrap select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .select-wrap select:invalid,.select-wrap select option[value=""]{color:var(--muted)}
+  .select-wrap .select-caret{position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--primary-dark);font-size:12px}
+  .select-wrap optgroup{font-weight:700;color:var(--primary-dark)}
+  .select-wrap option{color:var(--text);font-weight:400}
   input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 
   .actions{display:flex;justify-content:space-between;gap:10px;margin-top:24px;flex-wrap:wrap}
@@ -205,16 +213,76 @@ const TENDON_REGIONS=['knee','leg_post','shoulder','arm','elbow','hip_groin','an
 const BONE_REGIONS=['leg_ant','leg_post','foot','hip_groin','thigh_ant','thigh_post','lumbar'];
 const MUSCLE_REGIONS=['thigh_post','thigh_ant','leg_post','hip_groin','arm','abdomen'];
 const JOINT_REGIONS=['knee','ankle','shoulder','wrist_hand','hip_groin','elbow','lumbar','thoracic'];
+/* régions anatomiquement voisines : utilisées pour ne pas exclure les zones adjacentes (mauvaise localisation possible) */
+const REGION_ADJ={
+  face:['neck'], neck:['face','shoulder','thoracic'], shoulder:['neck','arm','thoracic'],
+  arm:['shoulder','elbow'], elbow:['arm','wrist_hand'], wrist_hand:['elbow'],
+  thoracic:['neck','shoulder','lumbar','abdomen'], abdomen:['thoracic','hip_groin'],
+  lumbar:['thoracic','hip_groin'], hip_groin:['lumbar','abdomen','perineum','thigh_ant','thigh_post'],
+  perineum:['hip_groin'], thigh_ant:['hip_groin','knee'], thigh_post:['hip_groin','knee'],
+  knee:['thigh_ant','thigh_post','leg_ant','leg_post'], leg_ant:['knee','ankle'], leg_post:['knee','ankle'],
+  ankle:['leg_ant','leg_post','foot'], foot:['ankle']
+};
+function analyzeTopography(){
+  const zs=selectedZones(); const byId=window.PAIN_ZONES_BY_ID||{};
+  const pts=zs.map(z=>byId[z.id]).filter(Boolean);
+  const n=zs.length, regions=selectedRegionKeys();
+  let ySpread=0; const sides=new Set();
+  if(pts.length){ const ys=pts.map(p=>p.pos[1]); ySpread=Math.max(...ys)-Math.min(...ys); }
+  zs.forEach(z=>{ if(z.side) sides.add(z.side); });
+  const sameSide=sides.size<=1;
+  const trajectory = n>=3 && ySpread>=0.9 && sameSide;           // trajet linéaire le long d'un membre → irradiation
+  const multiSite  = n>=4 && regions.length>=3 && !trajectory;    // douleurs dispersées → sensibilisation
+  let extent;
+  if(n<=1) extent='précise (focale)';
+  else if(ySpread<0.45 && regions.length<=1) extent='régionale (zone élargie)';
+  else if(trajectory) extent='trajet linéaire (possible irradiation)';
+  else if(multiSite) extent='diffuse / multi-sites';
+  else extent='étendue';
+  const adj=new Set();
+  regions.forEach(r=>(REGION_ADJ[r]||[]).forEach(a=>{ if(!regions.includes(a)) adj.add(a); }));
+  return {n, regions, ySpread:Math.round(ySpread*100)/100, trajectory, multiSite, extent, adjacent:[...adj]};
+}
 
 /* =========================================================================
    2. QUESTIONS GÉNÉRIQUES (tronc commun, certaines ciblées par région)
    ========================================================================= */
+/* Sports regroupés par famille (pour le menu déroulant + futur module rééducation) */
+const SPORTS = [
+  {group:"Endurance", items:[["course","Course à pied / route"],["trail","Trail / montagne"],["cyclisme","Cyclisme / VTT"],["triathlon","Triathlon"],["natation","Natation"],["aviron","Aviron"]]},
+  {group:"Sports collectifs", items:[["football","Football"],["rugby","Rugby"],["basket","Basketball"],["handball","Handball"],["volley","Volleyball"]]},
+  {group:"Sports de raquette", items:[["tennis","Tennis"],["badminton","Badminton"],["squash","Squash"],["padel","Padel"],["tt","Tennis de table"]]},
+  {group:"Force / fitness", items:[["muscu","Musculation / fitness"],["crossfit","CrossFit"],["haltero","Haltérophilie"],["powerlifting","Force athlétique"]]},
+  {group:"Sports de combat", items:[["boxe","Boxe / kickboxing"],["mma","MMA"],["judo","Judo"],["lutte","Lutte / grappling"]]},
+  {group:"Artistique / glisse", items:[["gym","Gymnastique"],["danse","Danse"],["escalade","Escalade"],["ski","Ski"],["snow","Snowboard"]]},
+  {group:"Athlétisme", items:[["sprint","Sprint / haies"],["saut","Sauts"],["lancers","Lancers"],["demifond","Demi-fond / fond"]]},
+  {group:"Autres", items:[["golf","Golf"],["equitation","Équitation"],["autre","Autre"]]}
+];
+
 const CORE_QUESTIONS = [
   {section:"Contexte", id:"age", type:"number", label:"Âge", help:"En années", min:10, max:90},
-  {section:"Contexte", id:"sport", type:"text", label:"Sport principal", help:"Ex. course à pied, football, musculation…"},
+  {section:"Contexte", id:"sex", type:"single", label:"Sexe", options:[["h","Homme"],["f","Femme"],["autre","Autre / NSP"]]},
+  {section:"Contexte", id:"weight", type:"number", label:"Poids (kg)", min:30, max:200},
+  {section:"Contexte", id:"height", type:"number", label:"Taille (cm)", min:120, max:220},
+  {section:"Contexte", id:"sport", type:"select", label:"Sport principal", placeholder:"— Choisir un sport —", options:SPORTS},
+  {section:"Contexte", id:"sport2", type:"select", label:"Sport secondaire (optionnel)", placeholder:"— Aucun / autre —", options:SPORTS},
+  {section:"Contexte", id:"level", type:"single", label:"Niveau de pratique",
+    options:[["loisir","Loisir"],["club","Club / amateur"],["compet","Compétition régionale-nationale"],["elite","Élite / professionnel"]]},
+  {section:"Contexte", id:"volume", type:"number", label:"Volume d'entraînement (heures / semaine)", min:0, max:40},
+  {section:"Contexte", id:"years", type:"number", label:"Ancienneté dans le sport (années)", min:0, max:60},
+  {section:"Contexte", id:"seasonPhase", type:"single", label:"Période de la saison",
+    options:[["off","Hors-saison / repos"],["prep","Préparation / pré-saison"],["inseason","Pleine saison"],["return","Reprise après coupure"]]},
+  {section:"Contexte", id:"dominantSide", type:"single", label:"Latéralité",
+    options:[["right","Droitier"],["left","Gaucher"],["ambi","Ambidextre"]]},
   {section:"Contexte", id:"loadChange", type:"single", label:"Votre charge d'entraînement a-t-elle changé récemment ?",
     help:"Volume, intensité ou fréquence sur les 2-4 dernières semaines",
     options:[["spike","Forte augmentation"],["slight","Légère hausse"],["stable","Stable"],["down","Diminution / reprise"]]},
+  {section:"Contexte", id:"equipChange", type:"single", label:"Changement récent de matériel ? (chaussures, raquette, vélo, surface…)",
+    options:[["yes","Oui, récemment"],["no","Non"]]},
+  {section:"Contexte", id:"priorInjury", type:"single", label:"Antécédent de blessure ?",
+    options:[["same","Oui, à la même zone"],["other","Oui, ailleurs"],["none","Aucun"]]},
+  {section:"Contexte", id:"generalHealth", type:"multi", label:"Antécédents médicaux pertinents ? (cochez si concerné)",
+    options:[["diabete","Diabète"],["thyroid","Trouble thyroïdien"],["inflam","Maladie inflammatoire / rhumatisme"],["reds","Troubles du cycle / alimentation (RED-S)"],["smoker","Tabac"],["none","Aucun"]]},
 
   {section:"Sécurité (drapeaux rouges)", id:"redflags", type:"multi",
     label:"Présentez-vous l'un de ces signes ? (cochez tout ce qui s'applique)",
@@ -738,6 +806,15 @@ function renderInput(q){
   }
   if(q.type==='number') return `<input type="number" name="${q.id}" value="${v??''}" min="${q.min??''}" max="${q.max??''}" placeholder="…">`;
   if(q.type==='text') return `<input type="text" name="${q.id}" value="${v??''}" placeholder="…">`;
+  if(q.type==='select'){
+    const cur=v??'';
+    let opts=`<option value="" ${cur===''?'selected':''}>${q.placeholder||'— Choisir —'}</option>`;
+    (q.options||[]).forEach(o=>{
+      if(o&&o.group){ opts+=`<optgroup label="${o.group}">`+o.items.map(it=>`<option value="${it[0]}" ${cur===it[0]?'selected':''}>${it[1]}</option>`).join('')+`</optgroup>`; }
+      else { opts+=`<option value="${o[0]}" ${cur===o[0]?'selected':''}>${o[1]}</option>`; }
+    });
+    return `<div class="select-wrap"><select name="${q.id}">${opts}</select><span class="select-caret">▾</span></div>`;
+  }
   return "";
 }
 
@@ -803,6 +880,10 @@ function compute(){
   if(has('painType','neuro'))neuro+=3; if(has('radiation','yes'))neuro+=3; if(has('neuroSx','tingling'))neuro+=2; if(has('neuroSx','numbness'))neuro+=2; if(has('neuroSx','weakness'))neuro+=1;
   if(has('disproportionate','yes'))nopl+=3; if(has('disproportionate','sometimes'))nopl+=1; if(has('widespread','yes'))nopl+=3;
   if(has('hypersensitivity','yes'))nopl+=3; if(has('hypersensitivity','mild'))nopl+=1; if(has('sleepStress','yes'))nopl+=1; if(has('painType','deep'))nopl+=1; if(has('duration','persistent'))nopl+=1;
+  /* topographie : un trajet linéaire oriente vers une irradiation (neuropathique) ; des douleurs multi-sites vers une sensibilisation (nociplastique) */
+  const topo=analyzeTopography();
+  if(topo.trajectory) neuro+=3;
+  if(topo.multiSite) nopl+=3;
   const mechTotal=noci+neuro+nopl||1;
   const mech=[{name:'Nociceptif',v:noci,c:'#0d9488'},{name:'Neuropathique',v:neuro,c:'#7c3aed'},{name:'Nociplastique',v:nopl,c:'#dc2626'}].sort((a,b)=>b.v-a.v);
 
@@ -841,6 +922,14 @@ function compute(){
 
   /* rendu */
   let html=`<div class="regionTag">${IC.pin} ${selectedZones().map(zoneChipLabel).join(' · ')}</div>`;
+
+  /* topographie de la douleur (issue des zones sélectionnées sur le mannequin) */
+  html+=`<div class="block"><div class="bt">Topographie de la douleur</div><div class="advice">`
+    +`Sélection : <b>${topo.n} zone${topo.n>1?'s':''}</b> · étendue <b>${topo.extent}</b>.`;
+  if(topo.trajectory) html+=`<div class="yellow" style="color:var(--primary-dark);margin-top:6px">→ Trajet linéaire le long d'un membre : évoquer une <b>irradiation / douleur projetée</b> (radiculaire ou le long d'un nerf).</div>`;
+  if(topo.multiSite) html+=`<div class="yellow" style="color:var(--primary-dark);margin-top:6px">→ Douleurs <b>multi-sites</b> : évoquer une composante de <b>sensibilisation centrale</b> (nociplastique).</div>`;
+  if(topo.adjacent.length) html+=`<div style="margin-top:8px;font-size:12px;color:var(--muted)">Zones adjacentes à ne pas exclure (le patient peut mal localiser) : ${topo.adjacent.map(regionLabel).join(', ')}.</div>`;
+  html+=`</div></div>`;
 
   if(rf.length){
     html+=`<div class="alert red"><span class="ico">${IC.alert}</span><div><b>Drapeau(x) rouge(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
@@ -993,8 +1082,8 @@ const zoneDefs = [];
   /* 5. Coude */
   P("elbow_ant","Pli du coude","elbow",[.95,.82,.1],.13);
   P("elbow_post","Pointe du coude","elbow",[.99,.76,-.12],.13);
-  P("elbow_med","Coude — côté interne","elbow",[.88,.78,0],.12);
-  P("elbow_lat","Coude — côté externe","elbow",[1.05,.78,0],.12);
+  P("elbow_med","Épicondyle médial (interne)","elbow",[.85,.78,0],.12);
+  P("elbow_lat","Épicondyle latéral (externe)","elbow",[.97,.78,0],.12);
 
   /* 6. Avant-bras */
   P("fa_ant","Avant-bras — face avant","wrist_hand",[1.04,.42,.1],.14);
@@ -1062,8 +1151,9 @@ const zoneDefs = [];
   P("gluteal_fold","Pli fessier","hip_groin",[.26,-.14,-.18],.13);
   P("trochanter","Grand trochanter","hip_groin",[.46,.04,-.02],.13);
 
-  /* Périnée */
-  C("perineum","Périnée","perineum",[0,-.2,0],.14);
+  /* Adducteurs hauts (bornent le périnée) + Périnée (petit, central) */
+  P("addhigh","Adducteurs (haut / aine)","hip_groin",[.1,-.36,.03],.12);
+  C("perineum","Périnée","perineum",[0,-.4,-.04],.08);
 
   /* 13. Cuisse */
   P("thigh_ant_hi","Cuisse avant — haut","thigh_ant",[.3,-.45,.18],.15);
@@ -1123,6 +1213,10 @@ zoneDefs.forEach((d,i)=>{
 });
 const ALL_ZONE_IDX = zoneDefs.map((d,i)=>i);
 function zonesNearY(y){ return zoneBins[Math.floor(y/ZONE_BIN)] || ALL_ZONE_IDX; }
+
+/* exposé au moteur clinique (positions des zones) pour l'analyse topographique */
+window.PAIN_ZONES_BY_ID = {};
+zoneDefs.forEach(d=>{ window.PAIN_ZONES_BY_ID[d.id] = {id:d.id, region:d.region, side:d.side, pos:d.pos}; });
 
 function makeZoneGeometry(def){
   if(def.shape === "sphere") return new THREE.SphereGeometry(def.radius, 28, 18);
