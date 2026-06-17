@@ -88,6 +88,7 @@
   .zone-chip{display:inline-flex;align-items:center;gap:7px;background:var(--primary-soft);color:var(--primary-dark);border:1px solid #a5e3ec;border-radius:99px;padding:5px 7px 5px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
   .zone-chip:hover{background:#bdeef4}
   .zone-chip .x{display:inline-flex;width:17px;height:17px;align-items:center;justify-content:center;border-radius:50%;background:#fff;color:var(--primary-dark);font-size:13px;line-height:1}
+  .zone-chip .cov{background:var(--primary);color:#fff;border-radius:6px;padding:1px 5px;font-size:10.5px;font-weight:700}
   .bm-empty{color:var(--muted);font-size:13.5px}
   .bm-stage{position:relative;min-height:520px;height:min(64vh,620px);border:1px solid #b7d3dc;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#d9eef3 0%,#c0d8df 64%,#aac5ce 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.72),inset 0 -26px 48px rgba(47,86,97,.14)}
   .bm-stage canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
@@ -97,6 +98,10 @@
   .bm-hover{position:absolute;left:14px;top:14px;max-width:min(320px,calc(100% - 28px));padding:8px 10px;border:1px solid rgba(8,145,178,.25);border-radius:10px;background:rgba(255,255,255,.92);color:var(--primary-dark);font-size:12px;font-weight:700;box-shadow:0 8px 22px rgba(13,60,72,.10);opacity:0;transform:translateY(-4px);transition:opacity .15s ease,transform .15s ease;pointer-events:none}
   .bm-hover.on{opacity:1;transform:translateY(0)}
   .bm-view{position:absolute;right:14px;bottom:14px;display:flex;gap:5px;padding:5px;border:1px solid rgba(8,145,178,.18);border-radius:11px;background:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(13,60,72,.08)}
+  .bm-tools{position:absolute;left:14px;top:14px;z-index:2;display:flex;gap:5px;padding:5px;border:1px solid rgba(8,145,178,.18);border-radius:11px;background:rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(13,60,72,.10)}
+  .bm-tool{border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;padding:7px 9px;cursor:pointer;transition:.15s}
+  .bm-tool:hover{border-color:var(--border);color:var(--primary-dark);background:#fff}
+  .bm-tool.on{background:var(--primary);border-color:var(--primary);color:#fff}
   .bm-view button,.bm-zone-list button{border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);padding:7px 9px;font-size:12px;font-weight:700}
   .bm-view button:hover,.bm-zone-list button:hover{border-color:var(--border);color:var(--primary-dark);background:#fff}
   .bm-view button.on,.bm-zone-list button.on{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -783,9 +788,9 @@ function zoneChipLabel(z){
 
 function selectedRegionMarkup(){
   const zs = selectedZones();
-  if(!zs.length) return `<span class="bm-empty">Aucune zone — cliquez les zones douloureuses sur le mannequin (plusieurs possibles).</span>`;
-  return `<div class="bm-chips-title">${zs.length} zone${zs.length>1?'s':''} sélectionnée${zs.length>1?'s':''}</div>`
-    + `<div class="bm-chips">` + zs.map(z=>`<button type="button" class="zone-chip" data-zoneid="${z.id}">${zoneChipLabel(z)}<span class="x">×</span></button>`).join("") + `</div>`;
+  if(!zs.length) return `<span class="bm-empty">Aucune zone — coloriez les parties douloureuses sur le mannequin (bouton « Colorier », ou tapez une structure).</span>`;
+  return `<div class="bm-chips-title">${zs.length} zone${zs.length>1?'s':''} coloriée${zs.length>1?'s':''}</div>`
+    + `<div class="bm-chips">` + zs.map(z=>`<button type="button" class="zone-chip" data-zoneid="${z.id}">${zoneChipLabel(z)}${z.coverage?`<span class="cov">${z.coverage}%</span>`:""}<span class="x">×</span></button>`).join("") + `</div>`;
 }
 
 function updateBodyMapSelection(){
@@ -813,6 +818,8 @@ function togglePainZone(region, side, zoneId, label){
   refreshBodyMapSelection();
 }
 function removeZoneById(id){
+  // efface le coloriage de cette zone côté modèle → re-dérive la sélection
+  if(window.erasePaintedZone){ window.erasePaintedZone(id); return; }
   const zs = selectedZones();
   const i = zs.findIndex(z=>z.id===id);
   if(i<0) return;
@@ -821,6 +828,16 @@ function removeZoneById(id){
 
 window.selectPainRegion = togglePainZone;
 window.getPainSelection = () => ({ zoneIds: selectedZones().map(z=>z.id) });
+/* le mannequin 3D appelle ceci après chaque coloriage : zones = [{id,region,side,label,coverage}] triées par % */
+window.setPaintedZones = function(zones){
+  state.zones = Array.isArray(zones) ? zones : [];
+  saveState();
+  if(orderedSections()[stepIndex] === "Zone douloureuse"){
+    updateBodyMapSelection(); renderNav(orderedSections()); updateProgress(orderedSections()); compute();
+  }
+};
+/* permet au modèle de restaurer la peinture au rechargement */
+window.getSavedPaintedZoneIds = () => selectedZones().map(z=>z.id);
 
 /* =========================================================================
    5. QUESTIONS ACTIVES (tronc commun + région sélectionnée)
@@ -915,7 +932,12 @@ function renderBodyMap(){
           <button type="button" data-view="left">Gauche</button>
           <button type="button" data-view="right">Droite</button>
         </div>
-        <div class="bm-status" id="painModelStatus">Faites pivoter le mannequin · cliquez les zones</div>
+        <div class="bm-tools">
+          <button type="button" id="pmPaint" class="bm-tool">🖌 Colorier</button>
+          <button type="button" id="pmErase" class="bm-tool">🧽 Gommer</button>
+          <button type="button" id="pmClear" class="bm-tool">↺ Effacer</button>
+        </div>
+        <div class="bm-status" id="painModelStatus">Activez « Colorier » et glissez sur le corps · ou tapez une structure pour la colorier</div>
       </div>
     </div>
     <div class="bm-selected" id="selectedRegionText">${selectedRegionMarkup()}</div>`;
@@ -1246,23 +1268,23 @@ const zoneDefs = [];
   C("cervical_spine","Colonne cervicale","neck",[0,2.12,-.18],.12);
 
   /* 3. Épaules / omoplates */
-  P("sh_front","Avant de l’épaule","shoulder",[.5,1.84,.18],.16);
-  P("sh_top","Dessus de l’épaule","shoulder",[.56,1.94,-.02],.16);
-  P("sh_back","Arrière de l’épaule","shoulder",[.5,1.84,-.18],.16);
-  P("sh_lat","Côté externe de l’épaule","shoulder",[.66,1.78,0],.16);
-  P("axilla","Aisselle","shoulder",[.5,1.62,.04],.13);
-  P("clavicle","Clavicule","shoulder",[.3,1.72,.2],.14);
-  P("scap_hi","Omoplate haute","thoracic",[.34,1.56,-.26],.15);
-  P("scap_lo","Omoplate basse","thoracic",[.34,1.34,-.26],.15);
-  P("scap_inner","Bord interne de l’omoplate","thoracic",[.2,1.46,-.3],.13);
+  P("sh_front","Avant de l’épaule","shoulder",[.46,1.74,.14],.15);
+  P("sh_top","Dessus de l’épaule","shoulder",[.5,1.8,-.02],.15);
+  P("sh_back","Arrière de l’épaule","shoulder",[.46,1.74,-.18],.15);
+  P("sh_lat","Côté externe de l’épaule","shoulder",[.66,1.72,-.02],.15);
+  P("axilla","Aisselle","shoulder",[.46,1.56,.06],.12);
+  P("clavicle","Clavicule","shoulder",[.26,1.74,.18],.13);
+  P("scap_hi","Omoplate haute","thoracic",[.32,1.6,-.28],.15);
+  P("scap_lo","Omoplate basse","thoracic",[.32,1.38,-.28],.15);
+  P("scap_inner","Bord interne de l’omoplate","thoracic",[.16,1.5,-.3],.12);
 
-  /* 4. Bras */
-  P("arm_ant_hi","Bras — avant haut","arm",[.76,1.46,.12],.15);
-  P("arm_ant_lo","Bras — avant bas","arm",[.84,1.16,.12],.15);
-  P("arm_post_hi","Bras — arrière haut","arm",[.76,1.46,-.12],.15);
-  P("arm_post_lo","Bras — arrière bas","arm",[.84,1.16,-.12],.15);
-  P("arm_med","Bras — face interne","arm",[.7,1.3,0],.13);
-  P("arm_lat","Bras — face externe","arm",[.9,1.3,0],.13);
+  /* 4. Bras (calibré : bras tombant contre le tronc, extérieur ≈ x0.8) */
+  P("arm_ant_hi","Bras — avant haut","arm",[.64,1.54,.13],.14);
+  P("arm_ant_lo","Bras — avant bas","arm",[.74,1.24,.13],.14);
+  P("arm_post_hi","Bras — arrière haut","arm",[.64,1.54,-.14],.14);
+  P("arm_post_lo","Bras — arrière bas","arm",[.74,1.24,-.14],.14);
+  P("arm_med","Bras — face interne","arm",[.56,1.38,0],.12);
+  P("arm_lat","Bras — face externe","arm",[.78,1.38,0],.12);
 
   /* 5. Coude */
   P("elbow_ant","Pli du coude","elbow",[.95,.82,.1],.13);
@@ -1604,24 +1626,51 @@ function createPainModelApp(){
     for(let k=0;k<zoneDefs.length;k++){ const c=zoneDefs[k].pos; const dx=p.x-c[0], dy=p.y-c[1], dz=p.z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=zoneDefs[k]; } }
     return best;
   }
-  // Surbrillance des zones sélectionnées (multi) : sommets dont la zone Voronoï est sélectionnée → épouse la surface, couvre tout.
+  // Rend l'état peint : chaque sommet colorié en cyan, le reste en couleur de base.
   function paintModelSurface(){
     const targets = painModelApp && painModelApp.paintTargets;
     if(!targets || !targets.length) return;
-    const sel = window.getPainSelection ? window.getPainSelection() : {};
-    const ids = sel.zoneIds || [];
-    const active = new Set();
-    ids.forEach(id=>{ const idx=ZONE_INDEX[id]; if(idx!==undefined) active.add(idx); });
     targets.forEach(t=>{
-      t.colors.set(t.base);
-      if(active.size && t.zoneIdx){
-        const zi=t.zoneIdx, col=t.colors;
-        for(let i=0;i<t.n;i++){ if(active.has(zi[i])){ col[i*3]=HI.r; col[i*3+1]=HI.g; col[i*3+2]=HI.b; } }
-      }
-      t.attr.array.set(t.colors);
-      t.attr.needsUpdate = true;
+      const col=t.colors, base=t.base, pn=t.painted;
+      for(let i=0;i<t.n;i++){ const o=i*3; if(pn && pn[i]){ col[o]=HI.r; col[o+1]=HI.g; col[o+2]=HI.b; } else { col[o]=base[o]; col[o+1]=base[o+1]; col[o+2]=base[o+2]; } }
+      t.attr.array.set(col); t.attr.needsUpdate = true;
     });
   }
+  function markVert(t,i,on){ t.painted[i]=on?1:0; const o=i*3; if(on){ t.colors[o]=HI.r; t.colors[o+1]=HI.g; t.colors[o+2]=HI.b; } else { t.colors[o]=t.base[o]; t.colors[o+1]=t.base[o+1]; t.colors[o+2]=t.base[o+2]; } }
+  // Pinceau libre : peint/efface les sommets dans un rayon autour du point (grille spatiale → rapide).
+  function brushAt(point, radius, erase){
+    const targets=painModelApp.paintTargets; if(!targets||!targets.length) return false;
+    const R2=radius*radius; let changed=false;
+    targets.forEach(t=>{
+      const g=t.gridSize, grid=t.grid, wp=t.wp, rng=Math.ceil(radius/g);
+      const cx=Math.floor(point.x/g), cy=Math.floor(point.y/g), cz=Math.floor(point.z/g);
+      let tc=false;
+      for(let ax=cx-rng;ax<=cx+rng;ax++) for(let ay=cy-rng;ay<=cy+rng;ay++) for(let az=cz-rng;az<=cz+rng;az++){
+        const arr=grid.get(ax+","+ay+","+az); if(!arr) continue;
+        for(let q=0;q<arr.length;q++){ const i=arr[q], o=i*3; const dx=wp[o]-point.x,dy=wp[o+1]-point.y,dz=wp[o+2]-point.z; if(dx*dx+dy*dy+dz*dz<=R2){ const want=erase?0:1; if(t.painted[i]!==want){ markVert(t,i,!erase); tc=true; } } }
+      }
+      if(tc){ t.attr.array.set(t.colors); t.attr.needsUpdate=true; changed=true; }
+    });
+    return changed;
+  }
+  function paintZoneWhole(zoneIdx, erase){
+    const targets=painModelApp.paintTargets; if(!targets) return false; let changed=false;
+    targets.forEach(t=>{ let tc=false; for(let i=0;i<t.n;i++){ if(t.zoneIdx[i]===zoneIdx){ const want=erase?0:1; if(t.painted[i]!==want){ markVert(t,i,!erase); tc=true; } } } if(tc){ t.attr.array.set(t.colors); t.attr.needsUpdate=true; changed=true; } });
+    return changed;
+  }
+  function clearAllPaint(){ (painModelApp.paintTargets||[]).forEach(t=>{ t.painted.fill(0); t.colors.set(t.base); t.attr.array.set(t.colors); t.attr.needsUpdate=true; }); }
+  // Cartographie par recouvrement : quelles zones anatomiques la peinture couvre, et à quel %.
+  function deriveAndCommit(){
+    const targets=painModelApp.paintTargets, zoneTotal=painModelApp.zoneTotal; if(!targets||!zoneTotal) return;
+    const cnt=new Int32Array(zoneDefs.length);
+    targets.forEach(t=>{ for(let i=0;i<t.n;i++){ if(t.painted[i]) cnt[t.zoneIdx[i]]++; } });
+    const zones=[];
+    for(let k=0;k<zoneDefs.length;k++){ const tot=zoneTotal[k]; if(!tot) continue; const cov=cnt[k]/tot; if(cov>=0.12){ const d=zoneDefs[k]; zones.push({id:d.id,region:d.region,side:d.side||null,label:d.label,coverage:Math.round(cov*100)}); } }
+    zones.sort((a,b)=>b.coverage-a.coverage);
+    if(window.setPaintedZones) window.setPaintedZones(zones);
+  }
+  window.erasePaintedZone=function(id){ const k=ZONE_INDEX[id]; if(k===undefined) return; paintZoneWhole(k,true); deriveAndCommit(); };
+  window.clearPaintedAll=function(){ clearAllPaint(); deriveAndCommit(); };
 
   function updatePointer(event){
     const rect = canvas.getBoundingClientRect();
@@ -1672,20 +1721,44 @@ function createPainModelApp(){
     mount.querySelectorAll("[data-view]").forEach(btn=>btn.classList.toggle("on", btn.dataset.view === name));
   }
 
-  canvas.addEventListener("pointermove", event=>setHovered(pick(event)));
-  canvas.addEventListener("pointerleave", ()=>setHovered(null));
-  canvas.addEventListener("pointerdown", event=>{ startPoint = {x:event.clientX, y:event.clientY}; });
+  /* ---- coloriage libre (pinceau / gomme) ---- */
+  const BRUSH_R = 0.17;
+  let paintMode=false, eraseMode=false, painting=false, lastP=0;
+  function updateTools(){
+    const pb=mount.querySelector("#pmPaint"), eb=mount.querySelector("#pmErase");
+    if(pb) pb.classList.toggle("on", paintMode && !eraseMode);
+    if(eb) eb.classList.toggle("on", paintMode && eraseMode);
+  }
+  function setPaint(on, erase){
+    paintMode=on; eraseMode=!!erase; painting=false;
+    controls.enabled=!on;
+    canvas.style.cursor = on ? (erase?"cell":"crosshair") : "grab";
+    updateTools();
+    setStatus(on ? (erase?"Glissez sur le corps pour gommer le coloriage":"Glissez sur le corps pour colorier la zone douloureuse") : "", !on);
+  }
+  const pmPaint=mount.querySelector("#pmPaint"), pmErase=mount.querySelector("#pmErase"), pmClear=mount.querySelector("#pmClear");
+  if(pmPaint) pmPaint.addEventListener("click", ()=>{ if(paintMode&&!eraseMode) setPaint(false,false); else setPaint(true,false); });
+  if(pmErase) pmErase.addEventListener("click", ()=>{ if(paintMode&&eraseMode) setPaint(false,false); else setPaint(true,true); });
+  if(pmClear) pmClear.addEventListener("click", ()=>{ clearAllPaint(); deriveAndCommit(); });
+
+  canvas.addEventListener("pointermove", event=>{
+    if(paintMode && painting){ const now=performance.now(); if(now-lastP>28){ lastP=now; const pt=pickSurface(event); if(pt) brushAt(pt, BRUSH_R, eraseMode); } }
+    else if(!paintMode){ setHovered(pick(event)); }
+  });
+  canvas.addEventListener("pointerleave", ()=>{ if(painting){ painting=false; deriveAndCommit(); } setHovered(null); });
+  canvas.addEventListener("pointerdown", event=>{
+    if(paintMode){ painting=true; lastP=0; const pt=pickSurface(event); if(pt) brushAt(pt, BRUSH_R, eraseMode); }
+    else { startPoint = {x:event.clientX, y:event.clientY}; }
+  });
   canvas.addEventListener("pointerup", event=>{
+    if(paintMode){ if(painting){ painting=false; deriveAndCommit(); } return; }
     if(!startPoint) return;
-    const dx = event.clientX - startPoint.x;
-    const dy = event.clientY - startPoint.y;
+    const dx = event.clientX - startPoint.x, dy = event.clientY - startPoint.y;
     startPoint = null;
-    if(Math.hypot(dx, dy) > 6) return;
-    let def = null;
-    const pt = pickSurface(event);
-    if(pt) def = nearestZoneDef(pt);
-    if(!def){ const mesh = pick(event); if(mesh) def = mesh.userData; }
-    if(def && window.selectPainRegion) window.selectPainRegion(def.region, def.side || null, def.id, def.label);
+    if(Math.hypot(dx, dy) > 6) return;          // tap (mode rotation) = colorie la structure entière touchée
+    const pt = pickSurface(event); if(!pt) return;
+    const def = nearestZoneDef(pt); if(!def) return;
+    paintZoneWhole(ZONE_INDEX[def.id], false); deriveAndCommit();
   });
 
   mount.querySelectorAll("[data-view]").forEach(btn=>{
@@ -1727,19 +1800,33 @@ function createPainModelApp(){
         // pré-calcul des positions monde + couleur de base, pour peindre la surface
         const baseCol = new THREE.Color(0x9aa1a5);
         const ZC = zoneDefs.map(d=>d.pos);
+        const GRID = 0.13;
+        const zoneTotal = new Int32Array(zoneDefs.length);
         painModelApp.paintTargets = meshes.map(m=>{
           const geo = m.geometry, posAttr = geo.attributes.position, n = posAttr.count;
           const wp = new Float32Array(n*3), v = new THREE.Vector3();
           for(let i=0;i<n;i++){ v.fromBufferAttribute(posAttr,i).applyMatrix4(m.matrixWorld); wp[i*3]=v.x; wp[i*3+1]=v.y; wp[i*3+2]=v.z; }
-          // affectation de chaque sommet à la zone la plus proche (Voronoï), accélérée par tranche de Y
+          // affectation Voronoï (par tranche de Y) + grille spatiale + totaux par zone
           const zoneIdx = new Uint8Array(n);
-          for(let i=0;i<n;i++){ const x=wp[i*3], y=wp[i*3+1], z=wp[i*3+2]; const cand=zonesNearY(y); let best=cand[0], bd=Infinity; for(let j=0;j<cand.length;j++){ const k=cand[j], c=ZC[k]; const dx=x-c[0], dy=y-c[1], dz=z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=k; } } zoneIdx[i]=best; }
+          const grid = new Map();
+          for(let i=0;i<n;i++){
+            const x=wp[i*3], y=wp[i*3+1], z=wp[i*3+2], cand=zonesNearY(y);
+            let best=cand[0], bd=Infinity;
+            for(let j=0;j<cand.length;j++){ const k=cand[j], c=ZC[k]; const dx=x-c[0], dy=y-c[1], dz=z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=k; } }
+            zoneIdx[i]=best; zoneTotal[best]++;
+            const gk=Math.floor(x/GRID)+","+Math.floor(y/GRID)+","+Math.floor(z/GRID);
+            let arr=grid.get(gk); if(!arr){ arr=[]; grid.set(gk,arr); } arr.push(i);
+          }
           const base = new Float32Array(n*3);
           for(let i=0;i<n;i++){ base[i*3]=baseCol.r; base[i*3+1]=baseCol.g; base[i*3+2]=baseCol.b; }
           const colors = base.slice();
           geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-          return {mesh:m, wp, zoneIdx, base, colors, n, attr:geo.attributes.color};
+          return {mesh:m, wp, zoneIdx, base, colors, painted:new Uint8Array(n), grid, gridSize:GRID, n, attr:geo.attributes.color};
         });
+        painModelApp.zoneTotal = zoneTotal;
+        // restaure la peinture des zones déjà enregistrées (retour sur la page)
+        const saved = window.getSavedPaintedZoneIds ? window.getSavedPaintedZoneIds() : [];
+        saved.forEach(id=>{ const k=ZONE_INDEX[id]; if(k!==undefined) paintZoneWhole(k,false); });
         setStatus("", true);
         paintModelSurface();
       },
