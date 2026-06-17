@@ -162,6 +162,10 @@
   .advice li{margin-bottom:4px}
   .yellow{font-size:12px;color:var(--warn);margin-top:6px}
   .disclaimer{font-size:11px;color:var(--muted);margin-top:18px;border-top:1px dashed var(--border);padding-top:12px}
+  .catalogue{margin-top:10px;font-size:12px}
+  .catalogue summary{cursor:pointer;color:var(--primary-dark);font-weight:700}
+  .catalogue > div{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .cat-item{display:inline-block;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:3px 8px;font-size:11.5px;color:var(--muted)}
   .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 10px}
   .empty .big{display:flex;justify-content:center;margin-bottom:10px;color:var(--primary);opacity:.85}
 </style>
@@ -380,6 +384,10 @@ function not(id,val){ return !has(id,val); }
 function any(id){ const v=state[id]; return Array.isArray(v)?v.length>0:(v!==undefined&&v!==''); }
 function ageLt(n){ const a=Number(state.age); return a&&a<n; }
 function ageGt(n){ const a=Number(state.age); return a&&a>n; }
+function ageBetween(a,b){ const x=Number(state.age); return x&&x>=a&&x<=b; }
+function sportIn(list){ return list.includes(state.sport) || list.includes(state.sport2); }
+function loadSpike(){ return has('loadChange','spike') || has('loadChange','slight'); }
+const TISSUE_COLOR={tendon:"#0d9488",muscle:"#0891b2",bone:"#b45309",joint:"#4f46e5",nerve:"#7c3aed",central:"#db2777",vascular:"#dc2626",flag:"#dc2626",other:"#64748b"};
 /* présentation traumatique : choc / impact direct (vs surcharge progressive) */
 function isTrauma(s){ return has('onset','direct') || has('trigger','impact'); }
 
@@ -576,6 +584,173 @@ const REGION_DATA = {
       {name:"Contusion périnéale",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('pe_ctx','trauma')],[2,()=>has('onset','direct')]]},
     ]},
 };
+
+/* =========================================================================
+   BASE DE DONNÉES DES PATHOLOGIES MUSCULO-SQUELETTIQUES (indexée par région)
+   Chaque entrée est scorée par des indices [poids, condition]. Combinée au
+   différentiel de REGION_DATA, elle s'applique à TOUTE combinaison de zones.
+   ========================================================================= */
+const SP_RUN=['course','trail','triathlon','demifond','sprint'];
+const SP_JUMP=['basket','volley','handball','saut','gym'];
+const SP_OVER=['handball','volley','tennis','badminton','natation','lancers','boxe'];
+const SP_RACQUET=['tennis','badminton','squash','padel','tt'];
+const SP_CONTACT=['football','rugby','boxe','mma','judo','lutte','handball','ski','snow'];
+const SP_LIFT=['muscu','crossfit','haltero','powerlifting'];
+const MSK_DB=[
+  /* ---------- GENOU ---------- */
+  {region:"knee",name:"Tendinopathie quadricipitale",tissue:"tendon",cues:[[3,()=>has('kn_loc','ant_quad')],[1,()=>has('kn_jump','yes')],[1,()=>ageGt(30)],[1,()=>has('warmup','yes')]]},
+  {region:"knee",name:"Instabilité / luxation de rotule",tissue:"joint",cues:[[3,()=>has('jointSigns','instability')],[2,()=>has('kn_twist','yes')],[2,()=>ageLt(20)],[1,()=>has('kn_loc','ant_patellar')]]},
+  {region:"knee",name:"Lésion méniscale médiale",tissue:"joint",cues:[[3,()=>has('kn_twist','yes')],[3,()=>has('jointSigns','locking')],[2,()=>has('kn_loc','medial')],[1,()=>ageGt(35)]]},
+  {region:"knee",name:"Lésion méniscale latérale",tissue:"joint",cues:[[3,()=>has('kn_twist','yes')],[2,()=>has('jointSigns','locking')],[2,()=>has('kn_loc','lateral')]]},
+  {region:"knee",name:"Entorse du LCP",tissue:"joint",cues:[[2,()=>has('onset','direct')],[2,()=>has('trigger','impact')],[2,()=>has('kn_loc','post')],[1,()=>sportIn(SP_CONTACT)]]},
+  {region:"knee",name:"Entorse du ligament collatéral médial (LLI)",tissue:"joint",cues:[[3,()=>has('kn_loc','medial')],[2,()=>has('onset','sudden')],[2,()=>sportIn(SP_CONTACT)],[1,()=>has('trigger','jumpland')]]},
+  {region:"knee",name:"Entorse du ligament collatéral latéral (LLE)",tissue:"joint",cues:[[3,()=>has('kn_loc','lateral')],[2,()=>has('onset','sudden')]]},
+  {region:"knee",name:"Maladie d'Osgood-Schlatter",tissue:"bone",cues:[[3,()=>ageBetween(10,16)],[2,()=>has('kn_loc','ant_tendon')],[1,()=>sportIn(SP_JUMP)]]},
+  {region:"knee",name:"Sinding-Larsen-Johansson",tissue:"bone",cues:[[3,()=>ageBetween(10,14)],[2,()=>has('kn_loc','ant_tendon')]]},
+  {region:"knee",name:"Bursite (pré-rotulienne / patte d'oie)",tissue:"joint",cues:[[2,()=>has('jointSigns','swelling')],[1,()=>has('kn_loc','medial')],[1,()=>has('onset','gradual')]]},
+  {region:"knee",name:"Kyste poplité (de Baker)",tissue:"joint",cues:[[3,()=>has('kn_loc','post')],[1,()=>has('jointSigns','swelling')],[1,()=>ageGt(40)]]},
+  {region:"knee",name:"Gonarthrose (arthrose fémoro-tibiale)",tissue:"joint",cues:[[3,()=>ageGt(45)],[2,()=>has('duration','persistent')],[1,()=>has('painType','mechanical')]]},
+  {region:"knee",name:"Syndrome du pli synovial (plica)",tissue:"joint",cues:[[2,()=>has('kn_loc','medial')],[1,()=>has('kn_sit','yes')],[1,()=>has('duration','persistent')]]},
+  {region:"knee",name:"Ostéochondrite disséquante",tissue:"bone",cues:[[3,()=>ageBetween(12,20)],[2,()=>has('jointSigns','locking')]]},
+  {region:"knee",name:"Chondropathie / lésion cartilagineuse",tissue:"joint",cues:[[2,()=>has('kn_loc','ant_patellar')],[1,()=>has('jointSigns','swelling')],[1,()=>has('duration','persistent')]]},
+
+  /* ---------- ÉPAULE ---------- */
+  {region:"shoulder",name:"Conflit sous-acromial",tissue:"tendon",cues:[[3,()=>has('sh_overhead','yes')],[2,()=>has('sh_loc','lat')],[2,()=>sportIn(SP_OVER)],[1,()=>has('onset','gradual')]]},
+  {region:"shoulder",name:"Rupture de la coiffe des rotateurs",tissue:"tendon",cues:[[3,()=>has('sh_weak','yes')],[2,()=>ageGt(40)],[2,()=>has('onset','sudden')],[1,()=>has('sh_overhead','yes')]]},
+  {region:"shoulder",name:"Tendinopathie calcifiante",tissue:"tendon",cues:[[2,()=>has('sh_loc','lat')],[2,()=>has('painNow') && Number(state.painNow)>=7],[1,()=>has('onset','spontaneous')]]},
+  {region:"shoulder",name:"Lésion du bourrelet (SLAP / labrum)",tissue:"joint",cues:[[2,()=>has('sh_appre','yes')],[2,()=>sportIn(SP_OVER)],[2,()=>has('jointSigns','locking')]]},
+  {region:"shoulder",name:"Luxation / subluxation gléno-humérale",tissue:"joint",cues:[[3,()=>has('sh_appre','yes')],[3,()=>has('jointSigns','instability')],[2,()=>has('onset','sudden')],[1,()=>ageLt(30)]]},
+  {region:"shoulder",name:"Arthropathie acromio-claviculaire",tissue:"joint",cues:[[3,()=>has('sh_loc','acj')],[2,()=>has('onset','direct')],[2,()=>sportIn(SP_CONTACT)]]},
+  {region:"shoulder",name:"Capsulite rétractile (épaule gelée)",tissue:"joint",cues:[[3,()=>has('sh_stiff','yes')],[1,()=>ageGt(40)],[1,()=>has('duration','persistent')],[1,()=>has('generalHealth','diabete')]]},
+  {region:"shoulder",name:"Tendinopathie du long biceps",tissue:"tendon",cues:[[2,()=>has('sh_loc','front')],[2,()=>sportIn(SP_LIFT)],[1,()=>has('onset','gradual')]]},
+  {region:"shoulder",name:"Omarthrose",tissue:"joint",cues:[[3,()=>ageGt(55)],[2,()=>has('duration','persistent')],[1,()=>has('painType','mechanical')]]},
+
+  /* ---------- COUDE ---------- */
+  {region:"elbow",name:"Épicondylalgie latérale (tennis elbow)",tissue:"tendon",cues:[[3,()=>has('el_loc','lat')],[2,()=>has('el_grip','yes')],[2,()=>sportIn(SP_RACQUET)],[1,()=>has('trigger','repetitive')]]},
+  {region:"elbow",name:"Épicondylalgie médiale (golfer's elbow)",tissue:"tendon",cues:[[3,()=>has('el_loc','med')],[2,()=>has('el_grip','yes')],[1,()=>sportIn(['golf','muscu','lancers'])]]},
+  {region:"elbow",name:"Neuropathie ulnaire (tunnel cubital)",tissue:"nerve",cues:[[3,()=>has('el_ulnar','yes')],[2,()=>has('neuroSx','tingling')],[1,()=>has('el_loc','med')]]},
+  {region:"elbow",name:"Bursite olécrânienne",tissue:"joint",cues:[[3,()=>has('el_loc','post')],[2,()=>has('jointSigns','swelling')]]},
+  {region:"elbow",name:"Tendinopathie du triceps",tissue:"tendon",cues:[[2,()=>has('el_loc','post')],[2,()=>sportIn(SP_LIFT)],[1,()=>has('onset','gradual')]]},
+  {region:"elbow",name:"Entorse / instabilité du coude",tissue:"joint",cues:[[2,()=>has('onset','direct')],[2,()=>has('jointSigns','instability')],[1,()=>has('trigger','impact')]]},
+  {region:"elbow",name:"Arthrose du coude",tissue:"joint",cues:[[2,()=>ageGt(50)],[2,()=>has('duration','persistent')],[1,()=>has('jointSigns','locking')]]},
+
+  /* ---------- AVANT-BRAS / POIGNET / MAIN ---------- */
+  {region:"wrist_hand",name:"Ténosynovite de De Quervain",tissue:"tendon",cues:[[3,()=>has('wr_dq','yes')],[2,()=>has('wr_loc','thumb')],[1,()=>has('trigger','repetitive')]]},
+  {region:"wrist_hand",name:"Syndrome du canal carpien",tissue:"nerve",cues:[[3,()=>has('wr_carpal','yes')],[2,()=>has('neuroSx','tingling')],[1,()=>has('neuroSx','numbness')]]},
+  {region:"wrist_hand",name:"Fracture du scaphoïde",tissue:"flag",cues:[[3,()=>has('wr_fall','yes')],[2,()=>has('onset','direct')],[1,()=>has('wr_loc','thumb')]]},
+  {region:"wrist_hand",name:"Entorse / lésion du TFCC",tissue:"joint",cues:[[2,()=>has('onset','direct')],[2,()=>has('wr_loc','ulnar')],[1,()=>has('jointSigns','swelling')]]},
+  {region:"wrist_hand",name:"Tendinopathie des extenseurs / fléchisseurs",tissue:"tendon",cues:[[2,()=>has('trigger','repetitive')],[2,()=>has('wr_loc','central')],[1,()=>sportIn(SP_LIFT)]]},
+  {region:"wrist_hand",name:"Rhizarthrose (arthrose du pouce)",tissue:"joint",cues:[[3,()=>ageGt(50)],[2,()=>has('wr_loc','thumb')],[1,()=>has('duration','persistent')]]},
+  {region:"wrist_hand",name:"Kyste synovial (arthrosynovial)",tissue:"joint",cues:[[2,()=>has('wr_loc','central')],[2,()=>has('jointSigns','swelling')]]},
+  {region:"wrist_hand",name:"Entorse / fracture des doigts",tissue:"joint",cues:[[2,()=>has('onset','direct')],[2,()=>has('trigger','impact')],[1,()=>sportIn(['basket','volley','hand'])]]},
+
+  /* ---------- COU / RACHIS CERVICAL ---------- */
+  {region:"neck",name:"Cervicalgie mécanique commune",tissue:"joint",cues:[[2,()=>has('nk_pattern','mech')],[2,()=>has('painType','mechanical')],[1,()=>not('radiation','yes')]]},
+  {region:"neck",name:"Radiculopathie cervicale (NCB)",tissue:"nerve",cues:[[3,()=>has('nk_pattern','arm')],[2,()=>has('nk_arm','yes')],[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','numbness')]]},
+  {region:"neck",name:"Entorse cervicale (whiplash)",tissue:"joint",cues:[[3,()=>has('onset','direct')],[2,()=>sportIn(SP_CONTACT)]]},
+  {region:"neck",name:"Céphalée cervicogénique",tissue:"joint",cues:[[3,()=>has('nk_pattern','head')],[1,()=>has('nk_pattern','mech')]]},
+  {region:"neck",name:"Cervicarthrose",tissue:"joint",cues:[[3,()=>ageGt(50)],[2,()=>has('duration','persistent')],[1,()=>has('painType','mechanical')]]},
+  {region:"neck",name:"Tension musculaire / trapèze",tissue:"muscle",cues:[[2,()=>has('nk_pattern','mech')],[1,()=>has('sleepStress','yes')]]},
+
+  /* ---------- THORAX / DORSAL ---------- */
+  {region:"thoracic",name:"Dorsalgie mécanique commune",tissue:"joint",cues:[[2,()=>has('th_rot','yes')],[2,()=>has('painType','mechanical')],[1,()=>has('onset','gradual')]]},
+  {region:"thoracic",name:"Dysfonction costo-vertébrale / costo-chondrale",tissue:"joint",cues:[[3,()=>has('th_breath','yes')]]},
+  {region:"thoracic",name:"Syndrome de Tietze",tissue:"joint",cues:[[2,()=>has('th_breath','yes')],[1,()=>has('jointSigns','swelling')]]},
+  {region:"thoracic",name:"Fracture de côte / de stress costale",tissue:"bone",cues:[[2,()=>has('bonePoint','yes')],[2,()=>has('onset','direct')],[1,()=>sportIn(['aviron','golf'])]]},
+  {region:"thoracic",name:"Maladie de Scheuermann",tissue:"bone",cues:[[2,()=>ageBetween(12,18)],[1,()=>has('duration','persistent')]]},
+  {region:"thoracic",name:"Douleur thoracique d'origine viscérale (à écarter)",tissue:"flag",cues:[[3,()=>has('redflags','systemic')],[1,()=>not('painType','mechanical')]]},
+
+  /* ---------- LOMBAIRE / RACHIS ---------- */
+  {region:"lumbar",name:"Lombalgie commune non spécifique",tissue:"joint",cues:[[2,()=>has('painType','mechanical')],[2,()=>has('lb_pattern','flex')],[1,()=>not('lb_leg','yes')]]},
+  {region:"lumbar",name:"Lombosciatique / hernie discale",tissue:"nerve",cues:[[3,()=>has('lb_leg','yes')],[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','numbness')],[2,()=>has('lb_pattern','flex')]]},
+  {region:"lumbar",name:"Spondylolyse / spondylolisthésis",tissue:"bone",cues:[[3,()=>has('lb_pattern','ext')],[2,()=>ageLt(25)],[2,()=>sportIn(['gym','danse','sprint','saut','rugby'])]]},
+  {region:"lumbar",name:"Canal lombaire étroit (sténose)",tissue:"nerve",cues:[[3,()=>has('lb_walk','yes')],[2,()=>ageGt(55)],[1,()=>has('duration','persistent')]]},
+  {region:"lumbar",name:"Dysfonction sacro-iliaque",tissue:"joint",cues:[[3,()=>has('lb_si','yes')],[1,()=>has('onset','direct')]]},
+  {region:"lumbar",name:"Arthrose / syndrome facettaire",tissue:"joint",cues:[[2,()=>has('lb_pattern','ext')],[2,()=>ageGt(45)],[1,()=>has('painType','mechanical')]]},
+  {region:"lumbar",name:"Spondyloarthrite (inflammatoire — à dépister)",tissue:"flag",cues:[[2,()=>has('redflags','nightpain')],[2,()=>ageLt(40)],[1,()=>has('generalHealth','inflam')]]},
+  {region:"lumbar",name:"Coccygodynie",tissue:"joint",cues:[[2,()=>has('onset','direct')],[1,()=>has('duration','persistent')]]},
+
+  /* ---------- BASSIN / HANCHE / AINE ---------- */
+  {region:"hip_groin",name:"Conflit fémoro-acétabulaire / lésion du labrum",tissue:"joint",cues:[[3,()=>has('hp_pinch','yes')],[2,()=>has('hp_loc','groin')],[1,()=>has('jointSigns','locking')]]},
+  {region:"hip_groin",name:"Pubalgie / lésion des adducteurs",tissue:"muscle",cues:[[3,()=>has('hp_add','yes')],[2,()=>has('hp_loc','pubic')],[2,()=>sportIn(['football','rugby','hockey','handball'])]]},
+  {region:"hip_groin",name:"Tendinopathie des fessiers (grand trochanter)",tissue:"tendon",cues:[[3,()=>has('hp_side','yes')],[2,()=>has('hp_loc','troch')],[1,()=>has('onset','gradual')]]},
+  {region:"hip_groin",name:"Bursite trochantérienne",tissue:"joint",cues:[[2,()=>has('hp_loc','troch')],[2,()=>has('hp_side','yes')],[1,()=>sportIn(SP_RUN)]]},
+  {region:"hip_groin",name:"Coxarthrose",tissue:"joint",cues:[[3,()=>ageGt(50)],[2,()=>has('hp_loc','groin')],[1,()=>has('duration','persistent')]]},
+  {region:"hip_groin",name:"Fracture de stress du col fémoral",tissue:"flag",cues:[[3,()=>has('bonePoint','yes')],[2,()=>loadSpike()],[2,()=>sportIn(SP_RUN)],[1,()=>has('generalHealth','reds')]]},
+  {region:"hip_groin",name:"Tendinopathie du psoas / du droit fémoral",tissue:"tendon",cues:[[2,()=>has('hp_loc','groin')],[2,()=>sportIn(['football','sprint','danse'])],[1,()=>has('onset','gradual')]]},
+  {region:"hip_groin",name:"Ostéochondrose / apophysite (avulsion) de hanche",tissue:"bone",cues:[[3,()=>ageBetween(12,18)],[2,()=>has('onset','sudden')],[1,()=>sportIn(['sprint','football'])]]},
+  {region:"hip_groin",name:"Sciatique / douleur référée lombaire",tissue:"nerve",cues:[[3,()=>has('hp_loc','glute')],[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','tingling')]]},
+  {region:"hip_groin",name:"Syndrome du piriforme",tissue:"nerve",cues:[[2,()=>has('hp_loc','glute')],[2,()=>has('radiation','yes')],[1,()=>sportIn(SP_RUN)]]},
+
+  /* ---------- CUISSE AVANT ---------- */
+  {region:"thigh_ant",name:"Lésion du droit fémoral (quadriceps)",tissue:"muscle",cues:[[3,()=>has('onset','sudden')],[2,()=>has('q_mech','sprint')],[2,()=>has('stretchContract','yes')]]},
+  {region:"thigh_ant",name:"Contusion / hématome (béquille)",tissue:"muscle",cues:[[3,()=>has('q_mech','impact')],[2,()=>has('onset','direct')],[2,()=>sportIn(SP_CONTACT)]]},
+  {region:"thigh_ant",name:"Myosite ossifiante (post-contusion)",tissue:"bone",cues:[[2,()=>has('q_mech','impact')],[2,()=>has('duration','subacute')],[1,()=>has('jointSigns','swelling')]]},
+  {region:"thigh_ant",name:"Fracture de stress fémorale",tissue:"flag",cues:[[3,()=>has('bonePoint','yes')],[2,()=>loadSpike()],[1,()=>sportIn(SP_RUN)]]},
+
+  /* ---------- CUISSE ARRIÈRE (ISCHIO) ---------- */
+  {region:"thigh_post",name:"Lésion des ischio-jambiers (type sprint)",tissue:"muscle",cues:[[3,()=>has('onset','sudden')],[3,()=>has('ham_mech','sprint')],[2,()=>sportIn(['sprint','football','rugby'])]]},
+  {region:"thigh_post",name:"Lésion d'étirement (semi-membraneux)",tissue:"muscle",cues:[[3,()=>has('ham_mech','stretch')],[2,()=>has('onset','sudden')],[1,()=>sportIn(['danse','gym'])]]},
+  {region:"thigh_post",name:"Tendinopathie proximale des ischio-jambiers",tissue:"tendon",cues:[[3,()=>has('ham_sit','yes')],[2,()=>has('ham_mech','gradual')],[1,()=>sportIn(SP_RUN)]]},
+  {region:"thigh_post",name:"Avulsion de l'ischion (apophysaire)",tissue:"bone",cues:[[3,()=>ageBetween(13,18)],[2,()=>has('onset','sudden')],[1,()=>has('ham_sit','yes')]]},
+  {region:"thigh_post",name:"Douleur référée / sciatique",tissue:"nerve",cues:[[2,()=>has('radiation','yes')],[2,()=>has('neuroSx','tingling')]]},
+
+  /* ---------- MOLLET / ACHILLE ---------- */
+  {region:"leg_post",name:"Tendinopathie corporéale d'Achille",tissue:"tendon",cues:[[3,()=>has('cf_morning','yes')],[3,()=>has('cf_loc','achilles')],[2,()=>sportIn(SP_RUN)]]},
+  {region:"leg_post",name:"Tendinopathie insertionnelle d'Achille",tissue:"tendon",cues:[[2,()=>has('cf_loc','achilles')],[2,()=>has('cf_morning','yes')],[1,()=>has('bonePoint','yes')]]},
+  {region:"leg_post",name:"Rupture du tendon d'Achille",tissue:"flag",cues:[[3,()=>has('cf_pop','yes')],[2,()=>has('cf_loc','achilles')],[2,()=>has('onset','sudden')],[1,()=>ageGt(35)]]},
+  {region:"leg_post",name:"Lésion du mollet (tennis leg)",tissue:"muscle",cues:[[3,()=>has('cf_pop','yes')],[2,()=>has('cf_loc','belly')],[2,()=>has('onset','sudden')]]},
+  {region:"leg_post",name:"Thrombose veineuse profonde (URGENCE)",tissue:"flag",cues:[[3,()=>has('cf_dvt','yes')]]},
+  {region:"leg_post",name:"Syndrome de loge postérieur",tissue:"nerve",cues:[[2,()=>has('cf_loc','deep')],[2,()=>sportIn(SP_RUN)],[1,()=>has('doseDependent','yes')]]},
+
+  /* ---------- TIBIA / JAMBE ANT ---------- */
+  {region:"leg_ant",name:"Périostite tibiale (MTSS)",tissue:"bone",cues:[[3,()=>has('sa_loc','medial_diffuse')],[2,()=>loadSpike()],[2,()=>sportIn(SP_RUN)]]},
+  {region:"leg_ant",name:"Fracture de stress du tibia",tissue:"flag",cues:[[3,()=>has('sa_loc','focal')],[2,()=>has('bonePoint','yes')],[2,()=>loadSpike()],[1,()=>has('redflags','nightpain')]]},
+  {region:"leg_ant",name:"Syndrome de loge d'effort (antérieur)",tissue:"nerve",cues:[[3,()=>has('sa_effort','yes')],[2,()=>has('sa_loc','anterior')],[1,()=>sportIn(SP_RUN)]]},
+  {region:"leg_ant",name:"Tendinopathie du jambier antérieur",tissue:"tendon",cues:[[2,()=>has('sa_loc','anterior')],[1,()=>has('warmup','yes')],[1,()=>sportIn(SP_RUN)]]},
+
+  /* ---------- CHEVILLE ---------- */
+  {region:"ankle",name:"Entorse latérale de cheville",tissue:"joint",cues:[[3,()=>has('ak_mech','inv')],[2,()=>has('ak_loc','lateral')],[2,()=>has('jointSigns','swelling')]]},
+  {region:"ankle",name:"Entorse médiale / syndesmose (haute)",tissue:"joint",cues:[[2,()=>has('ak_loc','ant')],[2,()=>has('onset','sudden')],[1,()=>sportIn(SP_CONTACT)]]},
+  {region:"ankle",name:"Fracture de cheville (règle d'Ottawa)",tissue:"flag",cues:[[3,()=>has('ak_weight','no')],[2,()=>has('bonePoint','yes')]]},
+  {region:"ankle",name:"Tendinopathie des fibulaires",tissue:"tendon",cues:[[2,()=>has('ak_loc','lateral')],[2,()=>has('ak_mech','gradual')],[1,()=>has('jointSigns','instability')]]},
+  {region:"ankle",name:"Tendinopathie du tibial postérieur",tissue:"tendon",cues:[[2,()=>has('ak_loc','medial')],[2,()=>has('ak_mech','gradual')]]},
+  {region:"ankle",name:"Conflit antérieur de cheville",tissue:"joint",cues:[[2,()=>has('ak_loc','ant')],[1,()=>has('duration','persistent')],[1,()=>sportIn(['football'])]]},
+  {region:"ankle",name:"Lésion ostéochondrale du dôme talien",tissue:"bone",cues:[[2,()=>has('jointSigns','locking')],[2,()=>has('duration','persistent')],[1,()=>has('ak_mech','inv')]]},
+  {region:"ankle",name:"Instabilité chronique de cheville",tissue:"joint",cues:[[3,()=>has('jointSigns','instability')],[2,()=>has('duration','persistent')]]},
+
+  /* ---------- PIED ---------- */
+  {region:"foot",name:"Fasciite plantaire",tissue:"tendon",cues:[[3,()=>has('ft_firststep','yes')],[2,()=>has('ft_loc','heel')],[1,()=>sportIn(SP_RUN)]]},
+  {region:"foot",name:"Fracture de stress métatarsienne",tissue:"flag",cues:[[3,()=>has('bonePoint','yes')],[2,()=>has('ft_loc','forefoot')],[2,()=>loadSpike()]]},
+  {region:"foot",name:"Névrome de Morton",tissue:"nerve",cues:[[3,()=>has('ft_burn','yes')],[2,()=>has('ft_loc','forefoot')]]},
+  {region:"foot",name:"Métatarsalgie",tissue:"joint",cues:[[2,()=>has('ft_loc','forefoot')],[1,()=>has('duration','persistent')]]},
+  {region:"foot",name:"Tendinopathie / fasciopathie de la voûte",tissue:"tendon",cues:[[2,()=>has('ft_loc','arch')],[1,()=>has('warmup','yes')]]},
+  {region:"foot",name:"Aponévrosite / épine calcanéenne",tissue:"bone",cues:[[2,()=>has('ft_loc','heel')],[2,()=>has('ft_firststep','yes')],[1,()=>has('bonePoint','yes')]]},
+  {region:"foot",name:"Hallux valgus / rigidus",tissue:"joint",cues:[[2,()=>has('ft_loc','forefoot')],[1,()=>ageGt(40)]]},
+  {region:"foot",name:"Sésamoïdite",tissue:"bone",cues:[[2,()=>has('ft_loc','forefoot')],[1,()=>sportIn(['danse','sprint'])]]},
+
+  /* ---------- BRAS ---------- */
+  {region:"arm",name:"Lésion du biceps brachial",tissue:"muscle",cues:[[3,()=>has('onset','sudden')],[2,()=>has('arm_loc','front')],[2,()=>has('arm_mech','contract')]]},
+  {region:"arm",name:"Lésion du triceps",tissue:"muscle",cues:[[3,()=>has('arm_loc','back')],[2,()=>has('onset','sudden')]]},
+  {region:"arm",name:"Rupture distale du biceps",tissue:"flag",cues:[[2,()=>has('arm_loc','distal')],[2,()=>has('onset','sudden')],[2,()=>sportIn(SP_LIFT)]]},
+  {region:"arm",name:"Fracture / contusion humérale",tissue:"flag",cues:[[2,()=>has('arm_mech','impact')],[2,()=>has('onset','direct')],[1,()=>has('bonePoint','yes')]]},
+
+  /* ---------- ABDOMEN ---------- */
+  {region:"abdomen",name:"Lésion des grands droits",tissue:"muscle",cues:[[3,()=>has('onset','sudden')],[2,()=>has('ab_loc','rectus')],[2,()=>has('ab_mech','reach')]]},
+  {region:"abdomen",name:"Lésion des obliques",tissue:"muscle",cues:[[3,()=>has('ab_loc','oblique')],[2,()=>has('ab_mech','twist')]]},
+  {region:"abdomen",name:"Hernie inguinale / de sportif",tissue:"other",cues:[[3,()=>has('ab_loc','low')],[2,()=>sportIn(['football','rugby','hockey'])]]},
+  {region:"abdomen",name:"Douleur viscérale (à écarter)",tissue:"flag",cues:[[3,()=>has('redflags','systemic')],[1,()=>not('painType','mechanical')]]},
+
+  /* ---------- TÊTE / VISAGE ---------- */
+  {region:"face",name:"Dysfonction temporo-mandibulaire (ATM)",tissue:"joint",cues:[[3,()=>has('fc_jaw','yes')],[2,()=>has('fc_loc','jaw')]]},
+  {region:"face",name:"Céphalée de tension",tissue:"nerve",cues:[[3,()=>has('fc_loc','temple')],[1,()=>has('sleepStress','yes')]]},
+  {region:"face",name:"Névralgie / douleur référée cervicale",tissue:"nerve",cues:[[2,()=>has('radiation','yes')],[1,()=>has('fc_loc','face')]]},
+  {region:"face",name:"Traumatisme facial (à écarter)",tissue:"flag",cues:[[2,()=>has('onset','direct')],[2,()=>sportIn(SP_CONTACT)]]},
+
+  /* ---------- PÉRINÉE ---------- */
+  {region:"perineum",name:"Compression du nerf pudendal",tissue:"nerve",cues:[[3,()=>has('pe_ctx','sport')],[2,()=>sportIn(['cyclisme','triathlon','equitation'])]]},
+  {region:"perineum",name:"Contusion / traumatisme périnéal",tissue:"flag",cues:[[3,()=>has('pe_ctx','trauma')],[2,()=>has('onset','direct')]]}
+];
 
 /* =========================================================================
    4. ÉTAT + PERSISTANCE
@@ -890,13 +1065,19 @@ function compute(){
 
   /* hypothèses ciblées — combinées par région sélectionnée */
   const regionHyps = selectedRegionKeys().map(region=>{
-    const rd = REGION_DATA[region];
-    const list = rd ? rd.diagnoses.map(diag=>{
+    const base = (REGION_DATA[region] && REGION_DATA[region].diagnoses) ? REGION_DATA[region].diagnoses : [];
+    const extra = (typeof MSK_DB!=='undefined') ? MSK_DB.filter(d=>d.region===region) : [];
+    const all = base.concat(extra);
+    const scored = all.map(diag=>{
       let score=0,max=0;
-      diag.cues.forEach(([w,fn])=>{ if(w>0)max+=w; if(fn())score+=w; });
-      return {name:diag.name,color:diag.color,tissue:diag.tissue,raw:score,pct:max?Math.max(0,Math.round(score/max*100)):0};
-    }).filter(h=>h.raw>0).sort((a,b)=>b.pct-a.pct) : [];
-    return {region, label:regionLabel(region), hyps:list};
+      diag.cues.forEach(([w,fn])=>{ if(w>0)max+=w; try{ if(fn())score+=w; }catch(e){} });
+      return {name:diag.name,color:diag.color||TISSUE_COLOR[diag.tissue]||'#0d9488',tissue:diag.tissue,raw:score,pct:max?Math.max(0,Math.round(score/max*100)):0};
+    });
+    const ranked = scored.filter(h=>h.raw>0).sort((a,b)=>b.pct-a.pct);
+    // catalogue : toutes les pathologies recensées pour la région (dé-doublonnées)
+    const seen={}, catalogue=[];
+    all.forEach(d=>{ if(!seen[d.name]){ seen[d.name]=1; catalogue.push(d.name); } });
+    return {region, label:regionLabel(region), hyps:ranked, catalogue};
   });
   // meilleure hypothèse globale (pour les conseils)
   let topTissue=null, topPct=-1;
@@ -958,10 +1139,11 @@ function compute(){
   regionHyps.forEach(rh=>{
     html+=`<div class="block"><div class="bt">Hypothèses — <span>${rh.label}</span></div>`;
     if(rh.hyps.length){
-      rh.hyps.slice(0,4).forEach(h=>{ html+=`<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.color}"></i></div></div>`; });
+      rh.hyps.slice(0,6).forEach(h=>{ html+=`<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.color}"></i></div></div>`; });
     } else {
       html+=`<div class="empty" style="padding:12px">Répondez aux questions de la zone pour préciser les hypothèses.</div>`;
     }
+    if(rh.catalogue.length) html+=`<details class="catalogue"><summary>Catalogue régional — ${rh.catalogue.length} pathologies recensées</summary><div>${rh.catalogue.map(n=>`<span class="cat-item">${n}</span>`).join("")}</div></details>`;
     html+=`</div>`;
   });
 
