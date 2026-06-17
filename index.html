@@ -74,6 +74,13 @@
   .bm-help{font-size:13.5px;color:var(--muted);margin-bottom:18px;max-width:540px}
   .bm-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;background:linear-gradient(180deg,#f5fcfd,#e4f3f7);border:1px solid var(--border);border-radius:18px;padding:20px 12px}
   .bm-3d{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;background:#f5fcfd;border:1px solid var(--border);border-radius:18px;padding:12px}
+  .bm-3d-solo{grid-template-columns:1fr}
+  .bm-chips-title{font-size:12px;font-weight:800;color:var(--primary-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  .bm-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .zone-chip{display:inline-flex;align-items:center;gap:7px;background:var(--primary-soft);color:var(--primary-dark);border:1px solid #a5e3ec;border-radius:99px;padding:5px 7px 5px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .zone-chip:hover{background:#bdeef4}
+  .zone-chip .x{display:inline-flex;width:17px;height:17px;align-items:center;justify-content:center;border-radius:50%;background:#fff;color:var(--primary-dark);font-size:13px;line-height:1}
+  .bm-empty{color:var(--muted);font-size:13.5px}
   .bm-stage{position:relative;min-height:520px;height:min(64vh,620px);border:1px solid #b7d3dc;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#d9eef3 0%,#c0d8df 64%,#aac5ce 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.72),inset 0 -26px 48px rgba(47,86,97,.14)}
   .bm-stage canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
   .bm-stage canvas:active{cursor:grabbing}
@@ -186,8 +193,10 @@
    1. RÉGIONS & LIBELLÉS
    ========================================================================= */
 const REGION_LABELS = {
+  face:"Tête / visage / mâchoire",
   neck:"Cou (rachis cervical)", shoulder:"Épaule (deltoïde)", arm:"Bras (biceps / triceps)", elbow:"Coude", wrist_hand:"Avant-bras / poignet / main",
   thoracic:"Thorax / haut du dos (côtes)", abdomen:"Abdomen (grands droits / obliques)", lumbar:"Bas du dos (lombaire / sacrum)", hip_groin:"Bassin / hanche / aine / fessier",
+  perineum:"Périnée",
   thigh_ant:"Cuisse — face avant (quadriceps)", thigh_post:"Cuisse — face arrière (ischio)", knee:"Genou",
   leg_post:"Mollet / tendon d'Achille", leg_ant:"Tibia / loge fibulaire", ankle:"Cheville", foot:"Pied / orteils"
 };
@@ -481,6 +490,23 @@ const REGION_DATA = {
       {name:"Lésion des obliques",tissue:"muscle",color:"#4f46e5",cues:[[3,()=>has('ab_loc','oblique')],[2,()=>has('ab_mech','twist')],[2,()=>has('onset','sudden')]]},
       {name:"Pubalgie (jonction abdo-adducteurs)",tissue:"muscle",color:"#0d9488",cues:[[3,()=>has('ab_loc','low')],[2,()=>has('trigger','sprintaccel')],[1,()=>has('onset','gradual')]]},
     ]},
+
+  face:{ questions:[
+      {id:"fc_loc",type:"single",label:"Localisation :",options:[["jaw","Mâchoire / ATM"],["temple","Tempe / front"],["face","Joue / visage"],["diffuse","Diffuse"]]},
+      {id:"fc_jaw",type:"single",label:"Douleur en mâchant / ouvrant la bouche, ou craquement de la mâchoire ?",options:[["yes","Oui"],["no","Non"]]},
+    ], diagnoses:[
+      {name:"Dysfonction de l'ATM (mâchoire)",tissue:"joint",color:"#0d9488",cues:[[3,()=>has('fc_jaw','yes')],[2,()=>has('fc_loc','jaw')],[1,()=>has('onset','gradual')]]},
+      {name:"Céphalée de tension / cervicogénique",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('fc_loc','temple')],[1,()=>has('onset','gradual')]]},
+      {name:"Douleur référée cervicale",tissue:"nerve",color:"#0891b2",cues:[[2,()=>has('radiation','yes')],[1,()=>has('fc_loc','face')]]},
+    ]},
+
+  perineum:{ questions:[
+      {id:"pe_ctx",type:"single",label:"Contexte :",options:[["sport","Vélo / selle / position assise prolongée"],["trauma","Choc / chute à califourchon"],["other","Autre / spontané"]]},
+    ], diagnoses:[
+      {name:"Avis médical conseillé (zone sensible)",tissue:"flag",color:"#dc2626",cues:[[2,()=>true]]},
+      {name:"Compression du nerf pudendal (canal d'Alcock)",tissue:"nerve",color:"#7c3aed",cues:[[3,()=>has('pe_ctx','sport')],[1,()=>has('duration','persistent')]]},
+      {name:"Contusion périnéale",tissue:"muscle",color:"#0891b2",cues:[[3,()=>has('pe_ctx','trauma')],[2,()=>has('onset','direct')]]},
+    ]},
 };
 
 /* =========================================================================
@@ -494,63 +520,74 @@ function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) 
 function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
 const SIDE_LABELS = {left:"gauche",right:"droite"};
 
-function selectedRegionLabel(){
-  if(!state.region) return "";
-  return REGION_LABELS[state.region] || state.region;
+function regionLabel(r){ return REGION_LABELS[r] || r; }
+
+/* multi-sélection : state.zones = [{id, region, side, label}] */
+function selectedZones(){
+  if(!Array.isArray(state.zones)){
+    // migration depuis l'ancien modèle mono-sélection
+    state.zones = state.region ? [{id:state.regionZone||state.region, region:state.region, side:state.regionSide||null, label:state.regionDetail||null}] : [];
+  }
+  return state.zones;
+}
+function selectedRegionKeys(){ const s=[]; selectedZones().forEach(z=>{ if(!s.includes(z.region)) s.push(z.region); }); return s; }
+function anyRegion(list){ return selectedRegionKeys().some(r=>list.includes(r)); }
+
+function zoneChipLabel(z){
+  const side = z.side && SIDE_LABELS[z.side] ? ` ${SIDE_LABELS[z.side]}` : "";
+  return `${z.label || regionLabel(z.region)}${side}`;
 }
 
 function selectedRegionMarkup(){
-  if(!state.region) return `<span style="color:var(--muted)">Aucune zone sélectionnée — cliquez sur le mannequin.</span>`;
-  const side = state.regionSide && SIDE_LABELS[state.regionSide] ? `<span class="side-chip">${SIDE_LABELS[state.regionSide]}</span>` : "";
-  const main = state.regionDetail ? state.regionDetail : selectedRegionLabel();
-  const sub = state.regionDetail ? ` <span style="color:var(--muted);font-weight:400">(${selectedRegionLabel()})</span>` : "";
-  return `Zone sélectionnée : <b>${main}</b>${side}${sub}`;
-}
-
-function regionChoiceButtons(){
-  return Object.entries(REGION_LABELS).map(([region,label])=>
-    `<button type="button" class="region-choice ${state.region===region?'on':''}" data-region="${region}">${label}</button>`
-  ).join("");
+  const zs = selectedZones();
+  if(!zs.length) return `<span class="bm-empty">Aucune zone — cliquez les zones douloureuses sur le mannequin (plusieurs possibles).</span>`;
+  return `<div class="bm-chips-title">${zs.length} zone${zs.length>1?'s':''} sélectionnée${zs.length>1?'s':''}</div>`
+    + `<div class="bm-chips">` + zs.map(z=>`<button type="button" class="zone-chip" data-zoneid="${z.id}">${zoneChipLabel(z)}<span class="x">×</span></button>`).join("") + `</div>`;
 }
 
 function updateBodyMapSelection(){
   const selected = document.getElementById('selectedRegionText');
   if(selected) selected.innerHTML = selectedRegionMarkup();
-  form.querySelectorAll('.zone').forEach(el=>el.classList.toggle('sel', el.dataset.region===state.region));
-  form.querySelectorAll('.region-choice').forEach(el=>el.classList.toggle('on', el.dataset.region===state.region));
 }
 
-function setPainRegion(region, side, zoneId, detail){
-  state.region = region;
-  if(side) state.regionSide = side;
-  else delete state.regionSide;
-  if(zoneId) state.regionZone = zoneId;
-  else delete state.regionZone;
-  if(detail) state.regionDetail = detail;
-  else delete state.regionDetail;
-  saveState();
-
+function refreshBodyMapSelection(){
   if(orderedSections()[stepIndex] === "Zone douloureuse"){
     updateBodyMapSelection();
     renderNav(orderedSections());
     updateProgress(orderedSections());
     compute();
     if(window.syncPainModelSelection) window.syncPainModelSelection();
-  } else {
-    render();
-  }
+  } else { render(); }
 }
 
-window.selectPainRegion = setPainRegion;
-window.getPainSelection = () => ({region:state.region, side:state.regionSide, zoneId:state.regionZone});
+/* bascule d'une zone (appelée par le clic 3D) */
+function togglePainZone(region, side, zoneId, label){
+  const zs = selectedZones();
+  const i = zs.findIndex(z=>z.id===zoneId);
+  if(i>=0) zs.splice(i,1);
+  else zs.push({id:zoneId, region, side:side||null, label:label||null});
+  saveState();
+  refreshBodyMapSelection();
+}
+function removeZoneById(id){
+  const zs = selectedZones();
+  const i = zs.findIndex(z=>z.id===id);
+  if(i<0) return;
+  zs.splice(i,1); saveState(); refreshBodyMapSelection();
+}
+
+window.selectPainRegion = togglePainZone;
+window.getPainSelection = () => ({ zoneIds: selectedZones().map(z=>z.id) });
 
 /* =========================================================================
    5. QUESTIONS ACTIVES (tronc commun + région sélectionnée)
    ========================================================================= */
 function allQuestions(){
   const qs = CORE_QUESTIONS.slice();
-  const rd = state.region && REGION_DATA[state.region];
-  if(rd){ rd.questions.forEach(q=>qs.push(Object.assign({}, q, {region:state.region, section:"Précisions sur la zone"}))); }
+  selectedRegionKeys().forEach(region=>{
+    const rd = REGION_DATA[region];
+    if(rd) rd.questions.forEach(q=>qs.push(Object.assign({}, q, {region, section:"Précisions sur la zone"})));
+  });
   return qs;
 }
 function visibleQuestions(){ return allQuestions().filter(q => !q.show || q.show(state)); }
@@ -624,8 +661,8 @@ function svgBack(){
 function renderBodyMap(){
   return `<div class="section-title"><span class="num">1</span>Zone douloureuse</div>
     <div class="bm-intro">Où avez-vous mal ?</div>
-    <div class="bm-help">Sélectionnez la région douloureuse sur le mannequin 3D. Les questions s'adapteront ensuite à cette zone.</div>
-    <div class="bm-3d" id="painModel3d">
+    <div class="bm-help">Tournez le mannequin et <b>cliquez chaque zone douloureuse</b> (vous pouvez en sélectionner plusieurs ; recliquez une zone pour la retirer). Puis passez au bilan.</div>
+    <div class="bm-3d bm-3d-solo" id="painModel3d">
       <div class="bm-stage">
         <canvas id="painModelCanvas" aria-label="Mannequin 3D interactif"></canvas>
         <div class="bm-hover" id="painModelHover"></div>
@@ -635,21 +672,10 @@ function renderBodyMap(){
           <button type="button" data-view="left">Gauche</button>
           <button type="button" data-view="right">Droite</button>
         </div>
-        <div class="bm-status" id="painModelStatus">Faites pivoter le mannequin · cliquez une zone</div>
-      </div>
-      <div>
-        <div class="bm-zone-title">Zones rapides</div>
-        <div class="bm-zone-list">${regionChoiceButtons()}</div>
+        <div class="bm-status" id="painModelStatus">Faites pivoter le mannequin · cliquez les zones</div>
       </div>
     </div>
-    <div class="bm-selected" id="selectedRegionText">${selectedRegionMarkup()}</div>
-    <details class="bm-fallback">
-      <summary>Vue 2D de secours</summary>
-      <div class="bm-wrap" style="margin-top:10px">
-        <figure class="bm-fig" style="margin:0">${svgFront()}<figcaption>Face</figcaption></figure>
-        <figure class="bm-fig" style="margin:0">${svgBack()}<figcaption>Dos</figcaption></figure>
-      </div>
-    </details>`;
+    <div class="bm-selected" id="selectedRegionText">${selectedRegionMarkup()}</div>`;
 }
 
 /* =========================================================================
@@ -666,7 +692,6 @@ function render(){
 
   if(currentSection === "Zone douloureuse"){
     form.innerHTML = renderBodyMap();
-    form.querySelectorAll('.zone').forEach(el=>{ if(el.dataset.region===state.region) el.classList.add('sel'); });
     requestAnimationFrame(()=>{ if(window.initPainModel3D) window.initPainModel3D(); });
   } else {
     const sectionQs = visibleQuestions().filter(q=>q.section===currentSection);
@@ -686,7 +711,7 @@ function renderNav(sections){
   const last = stepIndex === sections.length-1;
   prev.disabled = stepIndex===0;
   const onBodyMap = sections[stepIndex]==="Zone douloureuse";
-  next.disabled = onBodyMap && !state.region;
+  next.disabled = onBodyMap && !selectedZones().length;
   next.textContent = last ? (finished ? 'Bilan affiché ✓' : 'Terminer & voir le bilan') : 'Suivant →';
 }
 
@@ -716,17 +741,10 @@ function renderInput(q){
   return "";
 }
 
-/* clic sur la cartographie corporelle */
+/* retrait d'une zone via sa puce (la sélection se fait sur le mannequin 3D) */
 form.addEventListener('click', e=>{
-  const zone = e.target.closest('.zone');
-  const choice = e.target.closest('.region-choice');
-  if(zone){
-    setPainRegion(zone.dataset.region, zone.dataset.side || null);
-    return;
-  }
-  if(choice){
-    setPainRegion(choice.dataset.region, choice.dataset.side || null);
-  }
+  const chip = e.target.closest('.zone-chip');
+  if(chip){ removeZoneById(chip.dataset.zoneid); }
 });
 
 /* réponses aux questions */
@@ -751,7 +769,8 @@ function updateProgress(sections){
   const total=sections.length||1;
   document.getElementById('progress').style.width=((stepIndex+1)/total*100)+'%';
   if(sections[stepIndex]==="Zone douloureuse"){
-    document.getElementById('answeredCount').textContent=`Étape 1/${total} · ${state.region?'zone choisie':'choisir la zone'}`;
+    const nz=selectedZones().length;
+    document.getElementById('answeredCount').textContent=`Étape 1/${total} · ${nz?`${nz} zone${nz>1?'s':''} sélectionnée${nz>1?'s':''}`:'cliquez les zones'}`;
     return;
   }
   const qs=visibleQuestions().filter(q=>q.section===sections[stepIndex]);
@@ -768,8 +787,8 @@ function compute(){
     out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Répondez au questionnaire, puis appuyez sur « Terminer » : le bilan d'orientation s'affichera ici.</div>`;
     return;
   }
-  if(!state.region){
-    out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Sélectionnez la zone douloureuse sur le mannequin 3D pour démarrer une orientation ciblée.</div>`;
+  if(!selectedZones().length){
+    out.innerHTML=`<div class="empty"><span class="big">${IC.activity}</span>Sélectionnez au moins une zone douloureuse sur le mannequin 3D.</div>`;
     return;
   }
 
@@ -787,13 +806,19 @@ function compute(){
   const mechTotal=noci+neuro+nopl||1;
   const mech=[{name:'Nociceptif',v:noci,c:'#0d9488'},{name:'Neuropathique',v:neuro,c:'#7c3aed'},{name:'Nociplastique',v:nopl,c:'#dc2626'}].sort((a,b)=>b.v-a.v);
 
-  /* hypothèses ciblées par région */
-  const rd=REGION_DATA[state.region];
-  const hyps=rd.diagnoses.map(diag=>{
-    let score=0,max=0;
-    diag.cues.forEach(([w,fn])=>{ if(w>0)max+=w; if(fn())score+=w; });
-    return {name:diag.name,color:diag.color,tissue:diag.tissue,raw:score,pct:max?Math.max(0,Math.round(score/max*100)):0};
-  }).filter(h=>h.raw>0).sort((a,b)=>b.pct-a.pct);
+  /* hypothèses ciblées — combinées par région sélectionnée */
+  const regionHyps = selectedRegionKeys().map(region=>{
+    const rd = REGION_DATA[region];
+    const list = rd ? rd.diagnoses.map(diag=>{
+      let score=0,max=0;
+      diag.cues.forEach(([w,fn])=>{ if(w>0)max+=w; if(fn())score+=w; });
+      return {name:diag.name,color:diag.color,tissue:diag.tissue,raw:score,pct:max?Math.max(0,Math.round(score/max*100)):0};
+    }).filter(h=>h.raw>0).sort((a,b)=>b.pct-a.pct) : [];
+    return {region, label:regionLabel(region), hyps:list};
+  });
+  // meilleure hypothèse globale (pour les conseils)
+  let topTissue=null, topPct=-1;
+  regionHyps.forEach(rh=>{ if(rh.hyps[0] && rh.hyps[0].pct>topPct){ topPct=rh.hyps[0].pct; topTissue=rh.hyps[0].tissue; } });
 
   /* irritabilité (Maitland) */
   let irrScore=0; const pn=Number(state.painNow),pm=Number(state.painMax);
@@ -815,7 +840,7 @@ function compute(){
   if(has('sleepStress','yes'))yellow.push("Stress / sommeil perturbé");
 
   /* rendu */
-  let html=`<div class="regionTag">${IC.pin} ${selectedRegionLabel()}${state.regionSide&&SIDE_LABELS[state.regionSide]?` — ${SIDE_LABELS[state.regionSide]}`:""}</div>`;
+  let html=`<div class="regionTag">${IC.pin} ${selectedZones().map(zoneChipLabel).join(' · ')}</div>`;
 
   if(rf.length){
     html+=`<div class="alert red"><span class="ico">${IC.alert}</span><div><b>Drapeau(x) rouge(s)</b><ul style="margin:6px 0 0;padding-left:16px">`
@@ -840,13 +865,15 @@ function compute(){
       +mech.map(m=>`<div class="m"><span>${m.name}</span><div class="meter"><i style="width:${Math.round(m.v/mechTotal*100)}%;background:${m.c}"></i></div><span>${Math.round(m.v/mechTotal*100)}%</span></div>`).join("")+`</div></div>`;
   }
 
-  if(hyps.length){
-    html+=`<div class="block"><div class="bt">Hypothèses diagnostiques <span>${selectedRegionLabel()}</span></div>`;
-    hyps.slice(0,4).forEach(h=>{ html+=`<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.color}"></i></div></div>`; });
+  regionHyps.forEach(rh=>{
+    html+=`<div class="block"><div class="bt">Hypothèses — <span>${rh.label}</span></div>`;
+    if(rh.hyps.length){
+      rh.hyps.slice(0,4).forEach(h=>{ html+=`<div class="hyp"><div class="row"><b>${h.name}</b><span>${h.pct}%</span></div><div class="meter"><i style="width:${h.pct}%;background:${h.color}"></i></div></div>`; });
+    } else {
+      html+=`<div class="empty" style="padding:12px">Répondez aux questions de la zone pour préciser les hypothèses.</div>`;
+    }
     html+=`</div>`;
-  } else {
-    html+=`<div class="block"><div class="bt">Hypothèses diagnostiques</div><div class="empty" style="padding:14px">Répondez aux questions de la zone pour préciser les hypothèses.</div></div>`;
-  }
+  });
 
   if(any('painNow')||any('settle')||any('limitation')){
     html+=`<div class="block"><div class="bt">Irritabilité</div><div class="irr">
@@ -855,7 +882,7 @@ function compute(){
 
   if(yellow.length) html+=`<div class="block"><div class="bt">Drapeaux jaunes (psychosocial)</div>`+yellow.map(y=>`<div class="yellow">• ${y}</div>`).join("")+`</div>`;
 
-  const advice=buildAdvice(rf, hyps[0]?hyps[0].tissue:null, irr);
+  const advice=buildAdvice(rf, topTissue, irr);
   if(advice) html+=`<div class="block"><div class="bt">Pistes de prise en charge</div><div class="advice">${advice}</div></div>`;
 
   html+=`<div class="disclaimer">Aide au raisonnement clinique fondée sur les modèles actuels : drapeaux rouges/jaunes, classification du mécanisme de la douleur, raisonnement diagnostique régional et concept d'irritabilité (Maitland). Ne pose pas de diagnostic et ne remplace pas l'examen d'un professionnel de santé.</div>`;
@@ -915,87 +942,187 @@ const MODEL_HEIGHT = 5.55;
 const LOAD_FBX = !new URLSearchParams(window.location.search).has("noFbx");
 let painModelApp = null;
 
-const zoneDefs = [
-  // tête / cou / trapèzes
-  {id:"neck", label:"Cou", region:"neck", shape:"sphere", pos:[0,2.33,.02], radius:.3},
-  {id:"trap_l", label:"Trapèze", region:"neck", side:"left", shape:"box", pos:[-.26,2.0,-.14], size:[.42,.34,.34]},
-  {id:"trap_r", label:"Trapèze", region:"neck", side:"right", shape:"box", pos:[.26,2.0,-.14], size:[.42,.34,.34]},
-  // épaules
-  {id:"deltoid_l", label:"Deltoïde", region:"shoulder", side:"left", shape:"sphere", pos:[-.56,1.82,.02], radius:.27},
-  {id:"deltoid_r", label:"Deltoïde", region:"shoulder", side:"right", shape:"sphere", pos:[.56,1.82,.02], radius:.27},
-  // bras (biceps / triceps) — bras tombants en diagonale (calibré sur le maillage)
-  {id:"biceps_l", label:"Biceps", region:"arm", side:"left", shape:"sphere", pos:[-.8,1.3,.1], radius:.19},
-  {id:"biceps_r", label:"Biceps", region:"arm", side:"right", shape:"sphere", pos:[.8,1.3,.1], radius:.19},
-  {id:"triceps_l", label:"Triceps", region:"arm", side:"left", shape:"sphere", pos:[-.8,1.3,-.12], radius:.19},
-  {id:"triceps_r", label:"Triceps", region:"arm", side:"right", shape:"sphere", pos:[.8,1.3,-.12], radius:.19},
-  // coudes
-  {id:"elbow_l", label:"Coude", region:"elbow", side:"left", shape:"sphere", pos:[-.98,.78,0], radius:.18},
-  {id:"elbow_r", label:"Coude", region:"elbow", side:"right", shape:"sphere", pos:[.98,.78,0], radius:.18},
-  // avant-bras / poignet / main / doigts
-  {id:"forearm_l", label:"Avant-bras", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.05,.42,0], radius:.17},
-  {id:"forearm_r", label:"Avant-bras", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.05,.42,0], radius:.17},
-  {id:"wrist_l", label:"Poignet", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.08,.1,0], radius:.14},
-  {id:"wrist_r", label:"Poignet", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.08,.1,0], radius:.14},
-  {id:"hand_l", label:"Main", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.08,-.16,.02], radius:.17},
-  {id:"hand_r", label:"Main", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.08,-.16,.02], radius:.17},
-  {id:"fingers_l", label:"Doigts", region:"wrist_hand", side:"left", shape:"sphere", pos:[-1.08,-.34,.02], radius:.16},
-  {id:"fingers_r", label:"Doigts", region:"wrist_hand", side:"right", shape:"sphere", pos:[1.08,-.34,.02], radius:.16},
-  // thorax / pectoraux / haut du dos
-  {id:"pec_l", label:"Pectoral", region:"thoracic", side:"left", shape:"box", pos:[-.24,1.55,.22], size:[.36,.42,.22]},
-  {id:"pec_r", label:"Pectoral", region:"thoracic", side:"right", shape:"box", pos:[.24,1.55,.22], size:[.36,.42,.22]},
-  {id:"sternum", label:"Sternum / côtes", region:"thoracic", shape:"box", pos:[0,1.45,.28], size:[.22,.52,.16]},
-  {id:"upperback", label:"Haut du dos", region:"thoracic", shape:"box", pos:[0,1.5,-.22], size:[.74,.56,.22]},
-  // abdomen
-  {id:"rectus", label:"Abdominaux", region:"abdomen", shape:"box", pos:[0,.82,.26], size:[.34,.6,.18]},
-  {id:"oblique_l", label:"Oblique", region:"abdomen", side:"left", shape:"box", pos:[-.27,.8,.2], size:[.22,.5,.22]},
-  {id:"oblique_r", label:"Oblique", region:"abdomen", side:"right", shape:"box", pos:[.27,.8,.2], size:[.22,.5,.22]},
-  // bas du dos / sacrum
-  {id:"lumbar", label:"Lombaires", region:"lumbar", shape:"box", pos:[0,.7,-.24], size:[.54,.5,.26]},
-  {id:"sacrum", label:"Sacrum", region:"lumbar", shape:"box", pos:[0,.32,-.22], size:[.34,.34,.22]},
-  // bassin / hanche / fessier / aine
-  {id:"glute_l", label:"Fessier", region:"hip_groin", side:"left", shape:"sphere", pos:[-.24,.2,-.2], radius:.26},
-  {id:"glute_r", label:"Fessier", region:"hip_groin", side:"right", shape:"sphere", pos:[.24,.2,-.2], radius:.26},
-  {id:"hip_l", label:"Hanche", region:"hip_groin", side:"left", shape:"sphere", pos:[-.42,.3,.04], radius:.2},
-  {id:"hip_r", label:"Hanche", region:"hip_groin", side:"right", shape:"sphere", pos:[.42,.3,.04], radius:.2},
-  {id:"groin", label:"Aine / pubis", region:"hip_groin", shape:"box", pos:[0,-.02,.18], size:[.42,.32,.22]},
-  // cuisses
-  {id:"quad_l", label:"Quadriceps", region:"thigh_ant", side:"left", shape:"cylinder", pos:[-.31,-.7,.16], radius:.18, height:1.0},
-  {id:"quad_r", label:"Quadriceps", region:"thigh_ant", side:"right", shape:"cylinder", pos:[.31,-.7,.16], radius:.18, height:1.0},
-  {id:"adductor_l", label:"Adducteurs", region:"hip_groin", side:"left", shape:"cylinder", pos:[-.16,-.55,.06], radius:.12, height:.8},
-  {id:"adductor_r", label:"Adducteurs", region:"hip_groin", side:"right", shape:"cylinder", pos:[.16,-.55,.06], radius:.12, height:.8},
-  {id:"ham_l", label:"Ischio-jambiers", region:"thigh_post", side:"left", shape:"cylinder", pos:[-.31,-.7,-.2], radius:.18, height:1.0},
-  {id:"ham_r", label:"Ischio-jambiers", region:"thigh_post", side:"right", shape:"cylinder", pos:[.31,-.7,-.2], radius:.18, height:1.0},
-  // genoux
-  {id:"knee_l", label:"Genou", region:"knee", side:"left", shape:"sphere", pos:[-.31,-1.44,.04], radius:.2},
-  {id:"knee_r", label:"Genou", region:"knee", side:"right", shape:"sphere", pos:[.31,-1.44,.04], radius:.2},
-  // jambes (tibia / mollet)
-  {id:"tibia_l", label:"Tibia", region:"leg_ant", side:"left", shape:"cylinder", pos:[-.29,-2.03,-.04], radius:.14, height:.86},
-  {id:"tibia_r", label:"Tibia", region:"leg_ant", side:"right", shape:"cylinder", pos:[.29,-2.03,-.04], radius:.14, height:.86},
-  {id:"calf_l", label:"Mollet", region:"leg_post", side:"left", shape:"cylinder", pos:[-.29,-1.95,-.26], radius:.15, height:.82},
-  {id:"calf_r", label:"Mollet", region:"leg_post", side:"right", shape:"cylinder", pos:[.29,-1.95,-.26], radius:.15, height:.82},
-  // chevilles
-  {id:"ankle_l", label:"Cheville", region:"ankle", side:"left", shape:"sphere", pos:[-.27,-2.55,0], radius:.16},
-  {id:"ankle_r", label:"Cheville", region:"ankle", side:"right", shape:"sphere", pos:[.27,-2.55,0], radius:.16},
-  // pieds / orteils
-  {id:"foot_l", label:"Pied", region:"foot", side:"left", shape:"box", pos:[-.29,-2.77,.18], size:[.34,.17,.42]},
-  {id:"foot_r", label:"Pied", region:"foot", side:"right", shape:"box", pos:[.29,-2.77,.18], size:[.34,.17,.42]},
-  {id:"toes_l", label:"Orteils", region:"foot", side:"left", shape:"box", pos:[-.29,-2.76,.3], size:[.32,.16,.22]},
-  {id:"toes_r", label:"Orteils", region:"foot", side:"right", shape:"box", pos:[.29,-2.76,.3], size:[.32,.16,.22]},
-  // détails supplémentaires
-  {id:"nape", label:"Nuque", region:"neck", shape:"sphere", pos:[0,2.05,-.16], radius:.16},
-  {id:"clavicle_l", label:"Clavicule", region:"thoracic", side:"left", shape:"sphere", pos:[-.32,1.66,.22], radius:.14},
-  {id:"clavicle_r", label:"Clavicule", region:"thoracic", side:"right", shape:"sphere", pos:[.32,1.66,.22], radius:.14},
-  {id:"scapula_l", label:"Omoplate", region:"thoracic", side:"left", shape:"sphere", pos:[-.34,1.45,-.24], radius:.16},
-  {id:"scapula_r", label:"Omoplate", region:"thoracic", side:"right", shape:"sphere", pos:[.34,1.45,-.24], radius:.16},
-  {id:"lat_l", label:"Grand dorsal", region:"thoracic", side:"left", shape:"sphere", pos:[-.42,1.1,-.14], radius:.18},
-  {id:"lat_r", label:"Grand dorsal", region:"thoracic", side:"right", shape:"sphere", pos:[.42,1.1,-.14], radius:.18},
-  {id:"patella_l", label:"Rotule", region:"knee", side:"left", shape:"sphere", pos:[-.31,-1.4,.16], radius:.13},
-  {id:"patella_r", label:"Rotule", region:"knee", side:"right", shape:"sphere", pos:[.31,-1.4,.16], radius:.13},
-  {id:"achilles_l", label:"Tendon d'Achille", region:"leg_post", side:"left", shape:"sphere", pos:[-.29,-2.35,-.16], radius:.14},
-  {id:"achilles_r", label:"Tendon d'Achille", region:"leg_post", side:"right", shape:"sphere", pos:[.29,-2.35,-.16], radius:.14},
-  {id:"heel_l", label:"Talon", region:"foot", side:"left", shape:"box", pos:[-.29,-2.72,-.12], size:[.3,.2,.22]},
-  {id:"heel_r", label:"Talon", region:"foot", side:"right", shape:"box", pos:[.29,-2.72,-.12], size:[.3,.2,.22]}
-];
+/* Zones de douleur — ensemble détaillé couvrant toute la surface (affectation Voronoï).
+   Construites via L/R automatique ; le mannequin lisse ne distinguant pas doigts/orteils/traits
+   du visage, ceux-ci sont regroupés (Doigts, Orteils, faces du visage). */
+const zoneDefs = [];
+(function(){
+  const Z=(id,label,region,side,pos,r)=>zoneDefs.push({id,label,region,side:side||null,shape:"sphere",pos,radius:r||.15});
+  const P=(idb,label,region,xyz,r)=>{ Z(idb+"_l",label,region,"left",[-xyz[0],xyz[1],xyz[2]],r); Z(idb+"_r",label,region,"right",xyz,r); };
+  const C=(id,label,region,pos,r)=>Z(id,label,region,null,pos,r);
+
+  /* 1. Tête / visage / mâchoire */
+  C("face_front","Crâne avant","face",[0,2.55,.2],.16);
+  C("face_back","Crâne arrière","face",[0,2.52,-.26],.16);
+  P("face_lat","Crâne latéral","face",[.25,2.5,-.02],.15);
+  C("forehead","Front","face",[0,2.6,.16],.13);
+  P("temple","Tempe","face",[.21,2.46,.14],.11);
+  P("eyezone","Autour de l’œil","face",[.12,2.42,.24],.1);
+  P("cheek","Pommette","face",[.16,2.3,.22],.11);
+  P("jaw","Mâchoire","face",[.2,2.2,.08],.12);
+  P("tmj","Articulation temporo-mandibulaire","face",[.24,2.32,.06],.1);
+  C("chin","Menton","face",[0,2.16,.22],.12);
+
+  /* 2. Cou / nuque */
+  C("neck_front","Avant du cou","neck",[0,2.05,.16],.14);
+  P("neck_side","Côté du cou","neck",[.18,2.05,.02],.12);
+  C("nape","Arrière du cou / nuque","neck",[0,2.06,-.16],.14);
+  C("skull_base","Base du crâne","neck",[0,2.2,-.2],.13);
+  P("supraclav","Région sus-claviculaire","neck",[.3,1.92,.12],.13);
+  C("cervical_spine","Colonne cervicale","neck",[0,2.12,-.18],.12);
+
+  /* 3. Épaules / omoplates */
+  P("sh_front","Avant de l’épaule","shoulder",[.5,1.84,.18],.16);
+  P("sh_top","Dessus de l’épaule","shoulder",[.56,1.94,-.02],.16);
+  P("sh_back","Arrière de l’épaule","shoulder",[.5,1.84,-.18],.16);
+  P("sh_lat","Côté externe de l’épaule","shoulder",[.66,1.78,0],.16);
+  P("axilla","Aisselle","shoulder",[.5,1.62,.04],.13);
+  P("clavicle","Clavicule","shoulder",[.3,1.72,.2],.14);
+  P("scap_hi","Omoplate haute","thoracic",[.34,1.56,-.26],.15);
+  P("scap_lo","Omoplate basse","thoracic",[.34,1.34,-.26],.15);
+  P("scap_inner","Bord interne de l’omoplate","thoracic",[.2,1.46,-.3],.13);
+
+  /* 4. Bras */
+  P("arm_ant_hi","Bras — avant haut","arm",[.76,1.46,.12],.15);
+  P("arm_ant_lo","Bras — avant bas","arm",[.84,1.16,.12],.15);
+  P("arm_post_hi","Bras — arrière haut","arm",[.76,1.46,-.12],.15);
+  P("arm_post_lo","Bras — arrière bas","arm",[.84,1.16,-.12],.15);
+  P("arm_med","Bras — face interne","arm",[.7,1.3,0],.13);
+  P("arm_lat","Bras — face externe","arm",[.9,1.3,0],.13);
+
+  /* 5. Coude */
+  P("elbow_ant","Pli du coude","elbow",[.95,.82,.1],.13);
+  P("elbow_post","Pointe du coude","elbow",[.99,.76,-.12],.13);
+  P("elbow_med","Coude — côté interne","elbow",[.88,.78,0],.12);
+  P("elbow_lat","Coude — côté externe","elbow",[1.05,.78,0],.12);
+
+  /* 6. Avant-bras */
+  P("fa_ant","Avant-bras — face avant","wrist_hand",[1.04,.42,.1],.14);
+  P("fa_post","Avant-bras — face arrière","wrist_hand",[1.04,.42,-.1],.14);
+  P("fa_radial","Avant-bras — bord radial","wrist_hand",[1.02,.5,.12],.12);
+  P("fa_ulnar","Avant-bras — bord ulnaire","wrist_hand",[1.08,.34,-.12],.12);
+
+  /* 7. Poignet */
+  P("wrist_palmar","Poignet — face palmaire","wrist_hand",[1.08,.1,.1],.11);
+  P("wrist_dorsal","Poignet — face dorsale","wrist_hand",[1.08,.1,-.1],.11);
+  P("wrist_radial","Poignet — côté pouce","wrist_hand",[1.05,.12,.12],.1);
+  P("wrist_ulnar","Poignet — côté auriculaire","wrist_hand",[1.11,.08,-.12],.1);
+
+  /* 8. Main / doigts (regroupés) */
+  P("palm","Paume","wrist_hand",[1.08,-.12,.08],.12);
+  P("dorsum","Dos de la main","wrist_hand",[1.08,-.12,-.08],.12);
+  P("thumb_side","Bord du pouce","wrist_hand",[1.0,-.08,.12],.1);
+  P("pinky_side","Bord du petit doigt","wrist_hand",[1.16,-.1,-.08],.1);
+  P("hand_base","Base de la main","wrist_hand",[1.06,0,0],.1);
+  P("fingers","Doigts","wrist_hand",[1.1,-.34,.02],.14);
+
+  /* 9. Thorax / cage thoracique */
+  P("thx_hi","Haut du thorax","thoracic",[.24,1.5,.24],.15);
+  P("thx_mid","Milieu du thorax","thoracic",[.26,1.26,.26],.15);
+  P("thx_lo","Bas du thorax","thoracic",[.26,1.02,.24],.15);
+  C("sternum_hi","Sternum haut","thoracic",[0,1.55,.3],.12);
+  C("sternum_mid","Sternum moyen","thoracic",[0,1.34,.32],.12);
+  C("sternum_lo","Sternum bas","thoracic",[0,1.14,.3],.12);
+  P("ribs_ant","Côtes antérieures","thoracic",[.36,1.18,.16],.13);
+  P("flank_thx","Flanc thoracique","thoracic",[.44,1.2,0],.15);
+  P("upperback","Haut du dos thoracique","thoracic",[.24,1.5,-.28],.15);
+  P("midback","Milieu du dos thoracique","thoracic",[.24,1.26,-.3],.15);
+  P("lowthx","Bas du dos thoracique","thoracic",[.24,1.02,-.3],.15);
+  C("interscapular","Zone entre les omoplates","thoracic",[0,1.4,-.32],.13);
+  P("ribs_post","Côtes postérieures","thoracic",[.38,1.16,-.2],.13);
+  C("thoracic_spine","Colonne thoracique","thoracic",[0,1.3,-.34],.13);
+
+  /* 10. Abdomen */
+  P("abdo_hi","Haut de l’abdomen","abdomen",[.2,1.0,.28],.13);
+  C("epigastric","Centre haut de l’abdomen","abdomen",[0,1.02,.3],.12);
+  P("abdo_mid","Milieu de l’abdomen","abdomen",[.22,.8,.28],.13);
+  C("umbilical","Région du nombril","abdomen",[0,.8,.3],.12);
+  P("abdo_lo","Bas de l’abdomen","abdomen",[.2,.56,.28],.13);
+  C("hypogastric","Centre bas de l’abdomen","abdomen",[0,.56,.3],.12);
+  P("flank","Flanc","abdomen",[.42,.8,.12],.14);
+  P("inguinal","Région inguinale","hip_groin",[.22,.18,.24],.13);
+  C("pubis","Pubis","hip_groin",[0,.04,.24],.12);
+
+  /* 11. Dos / rachis (bas) */
+  C("lumbar_spine","Colonne lombaire","lumbar",[0,.72,-.3],.13);
+  P("paravert","Région paravertébrale","lumbar",[.18,.72,-.28],.12);
+  P("lowback","Bas du dos","lumbar",[.22,.56,-.28],.13);
+  P("si","Région sacro-iliaque","hip_groin",[.18,.34,-.26],.13);
+  C("sacrum","Sacrum","lumbar",[0,.3,-.24],.12);
+  C("coccyx","Coccyx","lumbar",[0,.12,-.2],.11);
+
+  /* 12. Bassin / fesses / hanche */
+  P("hip_front","Avant de hanche","hip_groin",[.3,.2,.2],.14);
+  P("hip_side","Côté de hanche","hip_groin",[.46,.28,0],.14);
+  P("hip_back","Arrière de hanche","hip_groin",[.3,.24,-.2],.14);
+  P("groinfold","Pli de l’aine","hip_groin",[.18,-.02,.18],.12);
+  P("glute_hi","Fesse haute","hip_groin",[.24,.3,-.22],.15);
+  P("glute_mid","Fesse moyenne","hip_groin",[.26,.15,-.22],.15);
+  P("glute_lo","Fesse basse","hip_groin",[.26,0,-.2],.15);
+  P("gluteal_fold","Pli fessier","hip_groin",[.26,-.14,-.18],.13);
+  P("trochanter","Grand trochanter","hip_groin",[.46,.04,-.02],.13);
+
+  /* Périnée */
+  C("perineum","Périnée","perineum",[0,-.2,0],.14);
+
+  /* 13. Cuisse */
+  P("thigh_ant_hi","Cuisse avant — haut","thigh_ant",[.3,-.45,.18],.15);
+  P("thigh_ant_mid","Cuisse avant — milieu","thigh_ant",[.31,-.7,.18],.15);
+  P("thigh_ant_lo","Cuisse avant — bas","thigh_ant",[.32,-.95,.16],.15);
+  P("thigh_post_hi","Cuisse arrière — haut","thigh_post",[.3,-.45,-.2],.15);
+  P("thigh_post_mid","Cuisse arrière — milieu","thigh_post",[.31,-.7,-.2],.15);
+  P("thigh_post_lo","Cuisse arrière — bas","thigh_post",[.32,-.95,-.2],.15);
+  P("thigh_med","Cuisse — face interne","hip_groin",[.16,-.65,0],.13);
+  P("thigh_lat","Cuisse — face externe","thigh_ant",[.46,-.65,0],.13);
+
+  /* 14. Genou */
+  P("knee_ant","Avant du genou","knee",[.31,-1.4,.16],.13);
+  P("knee_post","Creux poplité","knee",[.31,-1.42,-.16],.13);
+  P("knee_med","Genou — côté interne","knee",[.18,-1.42,0],.12);
+  P("knee_lat","Genou — côté externe","knee",[.44,-1.42,0],.12);
+  P("suprapatel","Au-dessus de la rotule","knee",[.31,-1.26,.16],.12);
+  P("infrapatel","Sous la rotule","knee",[.31,-1.56,.16],.12);
+
+  /* 15. Jambe / mollet */
+  P("shin_hi","Jambe avant — haut","leg_ant",[.3,-1.78,-.02],.14);
+  P("shin_mid","Jambe avant — milieu","leg_ant",[.3,-2.02,-.04],.14);
+  P("shin_lo","Jambe avant — bas","leg_ant",[.3,-2.26,-.04],.14);
+  P("calf_hi","Mollet — haut","leg_post",[.3,-1.78,-.24],.14);
+  P("calf_mid","Mollet — milieu","leg_post",[.3,-2.0,-.26],.14);
+  P("calf_lo","Mollet — bas","leg_post",[.3,-2.24,-.22],.14);
+  P("leg_med","Jambe — bord interne","leg_ant",[.18,-2.0,-.12],.12);
+  P("leg_lat","Jambe — bord externe","leg_ant",[.44,-2.0,-.12],.12);
+
+  /* 16. Cheville */
+  P("ankle_front","Avant de cheville","ankle",[.28,-2.5,.12],.12);
+  P("ankle_back","Arrière de cheville","ankle",[.28,-2.48,-.16],.12);
+  P("malleo_med","Malléole interne","ankle",[.16,-2.5,0],.11);
+  P("malleo_lat","Malléole externe","ankle",[.4,-2.5,0],.11);
+  P("achilles","Tendon d’Achille","leg_post",[.29,-2.4,-.18],.12);
+
+  /* 17. Pied / orteils (regroupés) */
+  P("heel","Talon","foot",[.29,-2.72,-.12],.13);
+  P("midfoot","Milieu du pied","foot",[.29,-2.74,.1],.13);
+  P("forefoot","Avant-pied","foot",[.29,-2.76,.32],.13);
+  P("dorsum_foot","Dos du pied","foot",[.29,-2.68,.16],.12);
+  P("sole","Plante du pied","foot",[.29,-2.82,.1],.12);
+  P("foot_med","Bord interne du pied","foot",[.18,-2.74,.14],.11);
+  P("foot_lat","Bord externe du pied","foot",[.4,-2.74,.14],.11);
+  P("toes","Orteils","foot",[.29,-2.77,.42],.13);
+})();
+
+const ZONE_INDEX = {};
+zoneDefs.forEach((d,i)=>{ ZONE_INDEX[d.id] = i; });
+
+/* index spatial par tranche de hauteur (Y) : accélère l'affectation des sommets aux zones */
+const ZONE_BIN = 0.5, ZONE_PAD = 0.7;
+const zoneBins = {};
+zoneDefs.forEach((d,i)=>{
+  const lo = Math.floor((d.pos[1]-ZONE_PAD)/ZONE_BIN), hi = Math.floor((d.pos[1]+ZONE_PAD)/ZONE_BIN);
+  for(let b=lo;b<=hi;b++){ (zoneBins[b]||(zoneBins[b]=[])).push(i); }
+});
+const ALL_ZONE_IDX = zoneDefs.map((d,i)=>i);
+function zonesNearY(y){ return zoneBins[Math.floor(y/ZONE_BIN)] || ALL_ZONE_IDX; }
 
 function makeZoneGeometry(def){
   if(def.shape === "sphere") return new THREE.SphereGeometry(def.radius, 28, 18);
@@ -1191,13 +1318,6 @@ function createPainModelApp(){
     camera.updateProjectionMatrix();
   }
 
-  function zoneActive(def, sel){
-    if(!sel || !sel.region) return false;
-    if(sel.zoneId) return def.id === sel.zoneId;
-    if(def.region !== sel.region) return false;
-    if(sel.side && def.side && sel.side !== def.side) return false;
-    return true;
-  }
   const HI = new THREE.Color(0x0891b2);
   // Zone la plus proche d'un point (même métrique que l'affectation des sommets).
   function nearestZoneDef(p){
@@ -1205,13 +1325,14 @@ function createPainModelApp(){
     for(let k=0;k<zoneDefs.length;k++){ const c=zoneDefs[k].pos; const dx=p.x-c[0], dy=p.y-c[1], dz=p.z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=zoneDefs[k]; } }
     return best;
   }
-  // Surbrillance : chaque sommet appartient à sa zone la plus proche (Voronoï) → toute la surface est couverte.
+  // Surbrillance des zones sélectionnées (multi) : sommets dont la zone Voronoï est sélectionnée → épouse la surface, couvre tout.
   function paintModelSurface(){
     const targets = painModelApp && painModelApp.paintTargets;
     if(!targets || !targets.length) return;
     const sel = window.getPainSelection ? window.getPainSelection() : {};
+    const ids = sel.zoneIds || [];
     const active = new Set();
-    zoneDefs.forEach((d,idx)=>{ if(zoneActive(d, sel)) active.add(idx); });
+    ids.forEach(id=>{ const idx=ZONE_INDEX[id]; if(idx!==undefined) active.add(idx); });
     targets.forEach(t=>{
       t.colors.set(t.base);
       if(active.size && t.zoneIdx){
@@ -1285,7 +1406,7 @@ function createPainModelApp(){
     const pt = pickSurface(event);
     if(pt) def = nearestZoneDef(pt);
     if(!def){ const mesh = pick(event); if(mesh) def = mesh.userData; }
-    if(def && window.selectPainRegion) window.selectPainRegion(def.region, def.side || null, def.id, zoneLabel(def));
+    if(def && window.selectPainRegion) window.selectPainRegion(def.region, def.side || null, def.id, def.label);
   });
 
   mount.querySelectorAll("[data-view]").forEach(btn=>{
@@ -1331,9 +1452,9 @@ function createPainModelApp(){
           const geo = m.geometry, posAttr = geo.attributes.position, n = posAttr.count;
           const wp = new Float32Array(n*3), v = new THREE.Vector3();
           for(let i=0;i<n;i++){ v.fromBufferAttribute(posAttr,i).applyMatrix4(m.matrixWorld); wp[i*3]=v.x; wp[i*3+1]=v.y; wp[i*3+2]=v.z; }
-          // affectation de chaque sommet à la zone la plus proche (Voronoï)
+          // affectation de chaque sommet à la zone la plus proche (Voronoï), accélérée par tranche de Y
           const zoneIdx = new Uint8Array(n);
-          for(let i=0;i<n;i++){ const x=wp[i*3], y=wp[i*3+1], z=wp[i*3+2]; let best=0, bd=Infinity; for(let k=0;k<ZC.length;k++){ const c=ZC[k]; const dx=x-c[0], dy=y-c[1], dz=z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=k; } } zoneIdx[i]=best; }
+          for(let i=0;i<n;i++){ const x=wp[i*3], y=wp[i*3+1], z=wp[i*3+2]; const cand=zonesNearY(y); let best=cand[0], bd=Infinity; for(let j=0;j<cand.length;j++){ const k=cand[j], c=ZC[k]; const dx=x-c[0], dy=y-c[1], dz=z-c[2]; const d=dx*dx+dy*dy+dz*dz; if(d<bd){ bd=d; best=k; } } zoneIdx[i]=best; }
           const base = new Float32Array(n*3);
           for(let i=0;i<n;i++){ base[i*3]=baseCol.r; base[i*3+1]=baseCol.g; base[i*3+2]=baseCol.b; }
           const colors = base.slice();
