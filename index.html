@@ -336,14 +336,14 @@ const CORE_QUESTIONS = [
     show:s=>anyRegion(BONE_REGIONS),
     options:[["yes","Oui"],["no","Non"]]},
   {section:"Comportement à la charge", id:"stretchContract", type:"single", label:"La douleur est-elle reproduite en étirant ET en contractant le muscle ?",
-    show:s=>anyRegion(MUSCLE_REGIONS) && (s.onset==='sudden'||s.trigger==='sprintaccel'||s.trigger==='jumpland'),
+    show:s=>anyRegion(MUSCLE_REGIONS) && (has('onset','sudden')||has('trigger','sprintaccel')||has('trigger','jumpland')),
     options:[["yes","Oui"],["no","Non"],["unsure","Je ne sais pas"]]},
   {section:"Comportement à la charge", id:"jointSigns", type:"multi", label:"Avez-vous l'un de ces signes articulaires ?",
     show:s=>anyRegion(JOINT_REGIONS),
     options:[["swelling","Gonflement de l'articulation"],["instability","Instabilité / dérobement"],["locking","Blocage / accrochage / craquement douloureux"],["nojoint","Aucun de ces signes"]]},
 
   {section:"Symptômes neurologiques", id:"neuroSx", type:"multi", label:"Ressentez-vous l'un de ces symptômes dans le membre ?",
-    show:s=>s.radiation==='yes'||s.painType==='neuro',
+    show:s=>has('radiation','yes')||has('painType','neuro'),
     options:[["tingling","Fourmillements / picotements"],["numbness","Engourdissement / perte de sensibilité"],["weakness","Sensation de faiblesse"],["nonNeuro","Aucun de ces symptômes"]]},
 
   {section:"Sensibilité de la douleur", id:"disproportionate", type:"single", label:"La douleur vous paraît-elle disproportionnée par rapport à ce que vous faites ?",
@@ -381,7 +381,7 @@ function any(id){ const v=state[id]; return Array.isArray(v)?v.length>0:(v!==und
 function ageLt(n){ const a=Number(state.age); return a&&a<n; }
 function ageGt(n){ const a=Number(state.age); return a&&a>n; }
 /* présentation traumatique : choc / impact direct (vs surcharge progressive) */
-function isTrauma(s){ s=s||state; return s.onset==='direct' || s.trigger==='impact'; }
+function isTrauma(s){ return has('onset','direct') || has('trigger','impact'); }
 
 const REGION_DATA = {
   neck:{ questions:[
@@ -793,10 +793,11 @@ function goStep(delta){
 function renderInput(q){
   const v=state[q.id];
   if(q.type==='single'||q.type==='multi'){
-    const isMulti=q.type==='multi', danger=q.id==='redflags';
+    // toutes les questions à choix acceptent désormais plusieurs réponses (cases à cocher)
+    const danger=q.id==='redflags';
     return `<div class="opts">`+q.options.map(([val,lab])=>{
-      const checked=isMulti?(Array.isArray(v)&&v.includes(val)):v===val;
-      return `<label class="opt ${danger&&val!=='none'?'danger':''}"><input type="${isMulti?'checkbox':'radio'}" name="${q.id}" value="${val}" ${checked?'checked':''}><span>${lab}</span></label>`;
+      const checked=Array.isArray(v)?v.includes(val):v===val;
+      return `<label class="opt ${danger&&val!=='none'?'danger':''}"><input type="checkbox" name="${q.id}" value="${val}" ${checked?'checked':''}><span>${lab}</span></label>`;
     }).join("")+`</div>`;
   }
   if(q.type==='scale'){
@@ -829,7 +830,7 @@ form.addEventListener('change', e=>{
   const el=e.target, id=el.name;
   const q=allQuestions().find(x=>x.id===id);
   if(!q) return;
-  if(q.type==='multi'){
+  if(q.type==='multi'||q.type==='single'){
     let arr=Array.isArray(state[id])?[...state[id]]:[];
     if(el.value==='none'||el.value==='nonNeuro'||el.value==='nojoint'){ arr=el.checked?[el.value]:[]; }
     else{ arr=arr.filter(x=>x!=='none'&&x!=='nonNeuro'&&x!=='nojoint'); if(el.checked)arr.push(el.value); else arr=arr.filter(x=>x!==el.value); }
